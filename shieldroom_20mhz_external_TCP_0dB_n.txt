@@ -1,0 +1,21 @@
+
+[ ID] Interval       Transfer     Bandwidth
+[3956]  0.0- 0.5 sec  3.06 MBytes  51.4 Mbits/sec
+[3956]  0.5- 1.0 sec  3.86 MBytes  64.7 Mbits/sec
+[3956]  1.0- 1.5 sec  2.68 MBytes  45.0 Mbits/sec
+[3956]  1.5- 2.0 sec   992 KBytes  16.3 Mbits/sec
+[3956]  2.0- 2.5 sec  3.66 MBytes  61.5 Mbits/sec
+[3956]  2.5- 3.0 sec  3.95 MBytes  66.2 Mbits/sec
+[3956]  3.0- 3.5 sec  4.00 MBytes  67.1 Mbits/sec
+[3956]  3.5- 4.0 sec  3.79 MBytes  63.6 Mbits/sec
+[3956]  4.0- 4.5 sec  2.95 MBytes  49.4 Mbits/sec
+[3956]  4.5- 5.0 sec  3.13 MBytes  52.6 Mbits/sec
+[3956]  5.0- 5.5 sec  3.18 MBytes  53.3 Mbits/sec
+[3956]  5.5- 6.0 sec  2.39 MBytes  40.1 Mbits/sec
+[3956]  6.0- 6.5 sec  3.44 MBytes  57.7 Mbits/sec
+[3956]  6.5- 7.0 sec  4.61 MBytes  77.3 Mbits/sec
+[3956]  7.0- 7.5 sec  4.21 MBytes  70.6 Mbits/sec
+[3956]  7.5- 8.0 sec  3.96 MBytes  66.5 Mbits/sec
+[3956]  8.0- 8.5 sec  4.02 MBytes  67.5 Mbits/sec
+[3956]  8.5- 9.0 sec  4.28 MBytes  71.8 Mbits/sec
+[3956]  9.0- 9.5 sec  4.43 MBytes  74.3 Mbits/sec 
