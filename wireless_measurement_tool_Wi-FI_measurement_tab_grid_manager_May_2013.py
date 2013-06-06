@@ -13,28 +13,36 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
 from pylab import *
-
+import commands
 ########################## Function to Quit the UI###################################################
 
 def callback_quit():           #create a event when termination of the event is involved
-        os.exit() 
+        os._exit(0) 
 ############################## End###################################################################
-    
+#def iperf_file_handling():
 ########################### Function to create Iperf for Scenario 1##################################
 def Wifi_SSH(a7,a9):
-        print a7
-        print a9
+        print a7 # TV wifi address
+        print a9 # Client Wifi address
         cmd_sr = "iperf -t 6 -i 0.5" + " -c " + a7 # The TV side
         cmd_si= "iperf -s -w 512k"                 # The client side
-        os.system('cmd_ si')
+        #os.system('cmd_ si')
          #cmd="ls"
+        commands.getoutput('cmd_si')
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(hostname='192.168.1.100', username='wireless',password='wireless',port=22)  
+        ssh.connect(hostname=a9, username='wireless',password='wireless',port=22)  
         stdin, stdout, stderr = ssh.exec_command(cmd_sr)
-        print stdout.readlines()
+        #print stdout.readlines()
         #string.split(data, '\n')
+        output= stdout.readlines()
+        a1= len(output)
+        i=1
+        while (i<a1):
+            print output[i]
+            i=i+1        
         ssh.close()
+        callback_quit()
 #################################END#################################################################
 
         #def callback_start(event):

@@ -92,7 +92,7 @@ root = Tk( )          #creates a window called TK root widget
 root.title('TPVision') #GUI title
 root.geometry("600x600")
 #inserting TpVision Logo
-path= 'C:\Users\mayur.sarode\Pictures\TpVision-logo.png'
+path= '/home/wireless/Documents/Wireless_measurement_tool_TPVision/TPvision-logo.tiff'
 img =ImageTk.PhotoImage(Image.open(path))
 panel = Label(root, image = img)
 panel.pack(side=BOTTOM,padx=1, pady=1, fill="both")
