@@ -86,7 +86,7 @@ class Wifi_only(Tkinter.Tk):
         x_flt = [float(n) for n in x1.split()]
         #print x_flt
         #print y
-        fig= plt.figure(figsize=(6,5), dpi=100)
+        fig= plt.figure(figsize=(4,4), dpi=100)
         #ax=subplot(1,1,1)
         plt.plot(x_flt, y)
         plt.title('Iperf time plot')
@@ -267,7 +267,7 @@ if __name__ == "__main__":
     app = Wifi_only(None)
     app.title('WiFi Measurements')
     #Inserting TPVision Label
-    path= 'C:\Users\mayur.sarode\Pictures\TpVision-logo.png'
+    path= "/home/wireless/Documents/Wireless_measurement_tool_TPVision/TPvision-logo.tiff"
     img =ImageTk.PhotoImage(Image.open(path))
     panel = Tkinter.Label(app, image = img)
     panel.grid(column=50, row=40, columnspan=10)
