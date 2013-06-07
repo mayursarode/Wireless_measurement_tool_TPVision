@@ -1,5 +1,5 @@
 #!/usr/bin/python
-#Modificaiton  Date: 5/22/2013
+#Modificaiton  Date: 6/7/2013
 import Tkinter
 import tkFont
 from PIL import Image, ImageTk
@@ -21,6 +21,7 @@ def callback_quit():           #create a event when termination of the event is 
         os._exit(0) 
 ############################## End###################################################################
 #def iperf_file_handling():
+# Add the code to  store the iperf results in seperate files
 
 def change_attn(a2):
         s_att= serial.Serial(port='/dev/ttyS0',baudrate=9600, bytesize=8, parity='N', stopbits=1,timeout=1)
