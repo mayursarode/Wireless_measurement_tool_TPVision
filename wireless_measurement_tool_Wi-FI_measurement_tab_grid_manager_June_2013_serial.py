@@ -21,16 +21,35 @@ def callback_quit():           #create a event when termination of the event is 
         os._exit(0) 
 ############################## End###################################################################
 #def iperf_file_handling():
-#def_change_attn():
+
+def change_attn(a2):
+        s_att= serial.Serial(port='/dev/ttyS0',baudrate=9600, bytesize=8, parity='N', stopbits=1,timeout=1)
+        s_w1= 'sa1 '+ str(a2)
+        s_w2= 'sa2 '+ str(a2)
+        s_w3= 'sa3 '+ str(a2)
+        s_w4= 'sa4 '+ str(a2)
+        
+        s_att.write(s_w1)
+        s_read=s_att.readline()
+        print(s_read)        
+        s_att.write(s_w2)
+        s_read=s_att.readline()
+        print(s_read)        
+        s_att.write(s_w3)
+        s_read=s_att.readline()
+        print(s_read)        
+        s_att.write(s_w4)
+        s_read=s_att.readline()
+        print(s_read)
+        
 ########################### Function to create Iperf for Scenario 1##################################
-def Wifi_SSH(a7,a9):
-        print a7 # TV wifi address
-        print a9 # Client Wifi address
-        cmd_sr = "iperf -t 6 -i 0.5" + " -c " + a7 # The TV side
-        cmd_si= "iperf -s -w 512k"                 # The client side
-        #os.system('cmd_ si')
-         #cmd="ls"
-        commands.getoutput('cmd_si')
+def Wifi_SSH(a5,a7,a9):
+        #print a5 # Run time
+        #print a7 # TV wifi address
+        #print a9 # Client Wifi address
+        cmd_sr = "iperf -i 0.5" + " -c " + a7  + " -t " + a5  # The TV side
+        cmd_si= "iperf -s -w 512k"                            # The client side
+        commands.getoutput(cmd_si)
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=a9, username='wireless',password='wireless',port=22)  
@@ -44,7 +63,7 @@ def Wifi_SSH(a7,a9):
             print output[i]
             i=i+1        
         ssh.close()
-        callback_quit()
+
 #################################END#################################################################
 
         #def callback_start(event):
@@ -58,10 +77,8 @@ class Wifi_only(Tkinter.Tk):
 
     def initialize(self):
         self.grid()    #Label
-        print "step"
 
-## Plotting the graph
-        
+## Plotting the graph        
         x=[]
         y=[]
         f=open("shieldroom_20mhz_external_TCP_0dB.txt")
@@ -91,7 +108,7 @@ class Wifi_only(Tkinter.Tk):
                 a16=line.find('bits/sec')
                 d1=float(line[a16-5:a16])*0.000001
                 y.append((d1))
-        
+### end of plotting thr graph        
         x1=((''.join(x)))
         x_flt = [float(n) for n in x1.split()]
         #print x_flt
@@ -116,7 +133,7 @@ class Wifi_only(Tkinter.Tk):
         self.label1.grid(column=1,row=2,columnspan=1,sticky='EW')
         self.entry1 = Tkinter.Entry(self)
         self.entry1.delete(0,Tkinter.END)
-        self.entry1.insert(0, "0.0")
+        self.entry1.insert(0, "0")
         self.entry1.grid(column=2, row=2, columnspan=1)
 
         #Step Attenuation size
@@ -124,7 +141,7 @@ class Wifi_only(Tkinter.Tk):
         self.label2.grid(column=1,row=3,columnspan=1,sticky='EW')
         self.entry2 = Tkinter.Entry(self)
         self.entry2.delete(0,Tkinter.END)
-        self.entry2.insert(0, "3.0")
+        self.entry2.insert(0, "3")
         self.entry2.grid(column=2, row=3, columnspan=1)
 
         # Stop  Attenuation
@@ -132,7 +149,7 @@ class Wifi_only(Tkinter.Tk):
         self.label3.grid(column=1,row=4,columnspan=1,sticky='EW')
         self.entry3 = Tkinter.Entry(self)
         self.entry3.delete(0,Tkinter.END)
-        self.entry3.insert(0, "60.0")
+        self.entry3.insert(0, "60")
         self.entry3.grid(column=2, row=4, columnspan=1)
 
         # Iperf Type
@@ -154,7 +171,7 @@ class Wifi_only(Tkinter.Tk):
         self.label5.grid(column=10,row=4,columnspan=1)
         self.entry5 = Tkinter.Entry(self)
         self.entry5.delete(0,Tkinter.END)
-        self.entry5.insert(0, "125")  
+        self.entry5.insert(0, "6")  
         self.entry5.grid(column=11,row=4,columnspan=5)
 
 
@@ -163,7 +180,7 @@ class Wifi_only(Tkinter.Tk):
         self.label6.grid(column=20,row=1,columnspan=1)
         self.entry6 = Tkinter.Entry(self, width=40)
         self.entry6.delete(0,Tkinter.END)
-        self.entry6.insert(0, "C:/Doucments/measurements")  
+        self.entry6.insert(0, "/home/wireless/Documents/Wireless_measurement_tool_TPVision/Doucments/measurements/iperf_raw_data")  
         self.entry6.grid(column=20, row=2, columnspan=10)
 
         # IP addresses
@@ -190,7 +207,7 @@ class Wifi_only(Tkinter.Tk):
         self.entry9 = Tkinter.Entry(self)
         self.entry9 = Tkinter.Entry(self)
         self.entry9.delete(0,Tkinter.END)
-        self.entry9.insert(0, "192.168.1.101")  
+        self.entry9.insert(0, "192.168.1.200")  
         self.entry9.grid(column=31, row=4, columnspan=5)
 
         self.label10= Tkinter.Label(self, text="Client P2P address")
@@ -212,7 +229,7 @@ class Wifi_only(Tkinter.Tk):
         self.entry11.grid(column=31, row=6, columnspan=5)
 
 # Start and the stop button
-        self.btn = Tkinter.Button(self, text=" START", width=10, command=self.callback,) #Create a  new button widget
+        self.btn = Tkinter.Button(self, text=" START", width=10, command=self.callback) #Create a  new button widget
         self.btn.grid(column=50, row= 3, columnspan=1)
         #self.btn.bind("<Button-1>",callback)
     
@@ -227,7 +244,6 @@ class Wifi_only(Tkinter.Tk):
         self.var=Tkinter.StringVar(self)
         self.var.set("Wifi only")
         self.var.get()
-
         self.option= Tkinter.OptionMenu(self, self.var, "Wifi only    ", "Wifi with P2P GO" ," Wifi with P2P GO with traffic");
         self.option.grid(column=2, row=5, columnspan=50)
           
@@ -239,7 +255,7 @@ class Wifi_only(Tkinter.Tk):
     def callback(self):
         a1=self.entry1.get() ## Set attenuation
         a2=self.entry2.get() ##Set attenuation step
-        a3=self.entry3.get()
+        a3=self.entry3.get() ## Stop attenuation
         a4=self.entry4.get() ## Start time
         a5= self.entry5.get() ##Run time
         a6=self.entry6.get() ## path
@@ -249,9 +265,19 @@ class Wifi_only(Tkinter.Tk):
         a10=self.entry10.get() ##Client P2P address
         a11=self.entry10.get()## p2P client Ethernet
         a12= self.var.get() 
-        a13=self,
+        #a13=self,
+        attn=int(a1)
+        attn_st=int(a2)
+        print attn_st
         if a12 == "Wifi only":
-           Wifi_SSH(a7,a9)
+           while(attn <= int(a3)):
+              Wifi_SSH(a5,a7,a9)
+              change_attn(attn)
+              attn=attn+attn_st
+              print a1
+        else:
+              callback_quit()
+        
       
     def callback_clear(self):
         self.entry1.delete(0, Tkinter.END)
@@ -268,12 +294,7 @@ class Wifi_only(Tkinter.Tk):
         self.label= Tkinter.Label(self, text="Iperf vs Time plot")
         self.label.grid(column=15, row= 19, columnspan=1)
 
-    def attenuator_step(self):
-        if a2< a3 :
-                a2=a2+a1
-                def_change_attn(a2)
-        else:
-                callback_quit()
+
 
                 
 # Inserting the Canvas
