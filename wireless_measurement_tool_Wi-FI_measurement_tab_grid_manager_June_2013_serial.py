@@ -1,5 +1,6 @@
 #!/usr/bin/python
 #Modificaiton  Date: 6/7/2013
+# Adding the file handling option
 import Tkinter
 import tkFont
 from PIL import Image, ImageTk
@@ -20,7 +21,7 @@ import serial
 def callback_quit():           #create a event when termination of the event is involved
         os._exit(0) 
 ############################## End###################################################################
-#def iperf_file_handling():
+        
 # Add the code to  store the iperf results in seperate files
 
 def change_attn(a2):
@@ -44,10 +45,13 @@ def change_attn(a2):
         print(s_read)
         
 ########################### Function to create Iperf for Scenario 1##################################
-def Wifi_SSH(a5,a7,a9):
+def Wifi_SSH(a6,attn,a5,a7,a9):
         #print a5 # Run time
         #print a7 # TV wifi address
         #print a9 # Client Wifi address
+        raw_f=a6+"shieldroom_20mhz_external_TCP_"+str(attn)+"dB.txt"
+        print raw_f
+        f_raw=open(raw_f,"w")
         cmd_sr = "iperf -i 0.5" + " -c " + a7  + " -t " + a5  # The TV side
         cmd_si= "iperf -s -w 512k"                            # The client side
         commands.getoutput(cmd_si)
@@ -62,7 +66,9 @@ def Wifi_SSH(a5,a7,a9):
         i=1
         while (i<a1):
             print output[i]
-            i=i+1        
+            i=i+1
+            f_raw.write(output[i])
+        f_raw.close()
         ssh.close()
 
 #################################END#################################################################
@@ -82,9 +88,10 @@ class Wifi_only(Tkinter.Tk):
 ## Plotting the graph        
         x=[]
         y=[]
-        f=open("shieldroom_20mhz_external_TCP_0dB.txt")
+        f=open("/home/wireless/Documents/Wireless_measurement_tool_TPVision/shieldroom_20mhz_external_TCP_0dB_n.txt")
         while 1:
             line=f.readline()
+            print line
             ## Extracting seconds
             a14= line.find('-',0)
             a15= line.find('sec',0)
@@ -181,7 +188,7 @@ class Wifi_only(Tkinter.Tk):
         self.label6.grid(column=20,row=1,columnspan=1)
         self.entry6 = Tkinter.Entry(self, width=40)
         self.entry6.delete(0,Tkinter.END)
-        self.entry6.insert(0, "/home/wireless/Documents/Wireless_measurement_tool_TPVision/Doucments/measurements/iperf_raw_data")  
+        self.entry6.insert(0, "/home/wireless/Documents/Wireless_measurement_tool_TPVision/")  
         self.entry6.grid(column=20, row=2, columnspan=10)
 
         # IP addresses
@@ -272,7 +279,7 @@ class Wifi_only(Tkinter.Tk):
         print attn_st
         if a12 == "Wifi only":
            while(attn <= int(a3)):
-              Wifi_SSH(a5,a7,a9)
+              Wifi_SSH(a6,attn,a5,a7,a9)
               change_attn(attn)
               attn=attn+attn_st
               print a1
