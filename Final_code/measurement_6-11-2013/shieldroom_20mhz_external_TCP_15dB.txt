@@ -1,0 +1,18 @@
+Client connecting to 192.168.1.100, TCP port 5001
+TCP window size: 16.0 KByte (default)
+------------------------------------------------------------
+[  3] local 192.168.1.200 port 44097 connected with 192.168.1.100 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0- 0.5 sec  49.4 MBytes   828 Mbits/sec
+[  3]  0.5- 1.0 sec  49.9 MBytes   837 Mbits/sec
+[  3]  1.0- 1.5 sec  50.1 MBytes   841 Mbits/sec
+[  3]  1.5- 2.0 sec  50.0 MBytes   839 Mbits/sec
+[  3]  2.0- 2.5 sec  49.9 MBytes   837 Mbits/sec
+[  3]  2.5- 3.0 sec  50.0 MBytes   839 Mbits/sec
+[  3]  3.0- 3.5 sec  50.1 MBytes   841 Mbits/sec
+[  3]  3.5- 4.0 sec  50.1 MBytes   841 Mbits/sec
+[  3]  4.0- 4.5 sec  50.0 MBytes   839 Mbits/sec
+[  3]  4.5- 5.0 sec  50.0 MBytes   839 Mbits/sec
+[  3]  5.0- 5.5 sec  50.1 MBytes   841 Mbits/sec
+[  3]  5.5- 6.0 sec  50.1 MBytes   841 Mbits/sec
+[  3]  0.0- 6.0 sec   600 MBytes   838 Mbits/sec
