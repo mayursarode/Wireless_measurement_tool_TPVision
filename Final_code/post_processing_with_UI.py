@@ -15,7 +15,8 @@ import webbrowser
 import os
 import subprocess
 import xlwt
-
+from scipy import interpolate,linspace
+import tkFileDialog
 def quit():           #create a event when termination of the event is involved
     import sys; sys.exit()
 ####################################################################################    
@@ -54,20 +55,29 @@ class Post_processing(Tkinter.Tk):
         self.entry_stt.insert(0, "6")
         self.entry_stt.grid(column=2, row=4, columnspan=1)
 
-        self.label_pwd= Tkinter.Label(self, text="Folder Iperf Data")
-        self.label_pwd.grid(column=1,row=5,columnspan=1)
-        self.entry_pwd = Tkinter.Entry(self, width=80)
+        self.button_pwd= Tkinter.Button(self, text="Folder Iperf Data",command=self.open_dir_raw)
+        self.button_pwd.grid(column=1,row=5,columnspan=1)
+        self.entry_pwd = Tkinter.Entry(self, width=40)
         self.entry_pwd.delete(0,Tkinter.END)
-        self.entry_pwd.insert(0, "/home/wireless/Documents/Wireless_measurement_tool_TPVision/Final_code/measurement_6-11-2013/")  
+        self.entry_pwd.insert(0, "/home/wireless/Documents/scenario3")  
         self.entry_pwd.grid(column=2, row=5, columnspan=10)
 
-        self.label_pwdxl= Tkinter.Label(self, text=" Path of the Excel File")
-        self.label_pwdxl.grid(column=1,row=6,columnspan=1)
-        self.entry_pwdxl = Tkinter.Entry(self, width=80)
+        self.button_pwdxl= Tkinter.Button(self, text=" Path of the Excel File", command=self.open_dir_exl)
+        self.button_pwdxl.grid(column=1,row=6,columnspan=1)
+        self.entry_pwdxl = Tkinter.Entry(self, width=40)
         self.entry_pwdxl.delete(0,Tkinter.END)
         self.entry_pwdxl.insert(0, "/home/wireless/Documents/Wireless_measurement_tool_TPVision/test_scripts/test.xls")  
         self.entry_pwdxl.grid(column=2, row=6, columnspan=10)
 
+ ######################################################### Entering the TAB name###################################################################################################
+        self.label_att=Tkinter.Label(self, text="Tab name")
+        self.label_att.grid(column=1,row=7,columnspan=1,sticky='EW')
+
+        self.entry_tab = Tkinter.Entry(self, width=40)
+        self.entry_tab.delete(0,Tkinter.END)
+        self.entry_tab.insert(0,"WIFI")  
+        self.entry_tab.grid(column=2, row=7, columnspan=10)
+        
         
 
         self.btn = Tkinter.Button(self, text=" START", width=10, command=self.callback)#Create a  new button widget
@@ -80,30 +90,38 @@ class Post_processing(Tkinter.Tk):
         a_stt=self.entry_stt.get()   # Stop attenuation
         a_pwd=self.entry_pwd.get()
         a_pwdxl=self.entry_pwdxl.get()
-        ##print a_st
-        #print a_stt
-        #print a_pwd
-        c,d,traceLen=cdf_calculation(a_pwd, int(a_st), int(a_stt),int(a_att))
-        print c
-        print d
-        write_excel(a_pwdxl, c,d,traceLen)
+        a_tab=self.entry_tab.get()
+        cdf_calculation(a_pwdxl,a_pwd, int(a_st), int(a_stt),int(a_att),a_tab)
 
-def write_excel(a_pwd, c,d,traceLen):
-        wbk = xlwt.Workbook()
-        sheet = wbk.add_sheet('sheet 1')
-        #Now that the sheet is created, it’s very easy to write data to it.
-        # indexing is zero based, row then column
-        sheet.write(0,1,a_pwd)  
-
-        #When you’re done, save the workbook (you don’t have to close it like you do with a file object)
-        wbk.save(a_pwd)
+    def open_dir_raw(self):
+        self.entry_pwd.delete(0,Tkinter.END)
+        dirname=tkFileDialog.askdirectory(parent=self,initialdir="/", title='Please select a Direcotry')
+        self.entry_pwd.insert(0, dirname)  
+        
 
 
-def cdf_calculation(a_pwd, a_st, a_stt,a_att):
+    def open_dir_exl(self):
+        self.entry_pwdxl.delete(0,Tkinter.END)
+        dirname=tkFileDialog.askdirectory(parent=self,initialdir="/", title='Please select a Direcotry')
+        self.entry_pwdxl.insert(0, dirname)  
+        
+
+#def write_excel(a_pwd, c,d,traceLen,ex_c):
+        
+
+def cdf_calculation(a_pwdxl,a_pwd, a_st, a_stt,a_att,a_tab):
         x=[]  ###local variable
         y=[]  ###Local variables
+        ex_c=0
+        wbk = xlwt.Workbook(encoding="utf-8")
+        sheet = wbk.add_sheet(a_tab)
+        sheet.write(1,1,"10 % cdf")
+        sheet.write(1,3,"90 % cdf")
+        sheet.write(1,5,"50 % cdf")
+        
         while a_att<=a_stt:
-            fopen=a_pwd+"shieldroom_20mhz_external_TCP_"+ str(a_att) +"dB.txt"
+            ex_c=ex_c+a_st
+            fopen=a_pwd+"/shieldroom_20mhz_external_TCP_"+ str(a_att) +"dB.txt"
             print fopen
             fd1=open(fopen)
             a_att=a_att+a_st
@@ -136,8 +154,8 @@ def cdf_calculation(a_pwd, a_st, a_stt,a_att):
             x1=((''.join(x)))
             x_flt = [float(n) for n in x1.split()]
             fd1.close()
-            a=x_flt
-            b=y
+            a=x_flt  ###  time
+            b=y      ##### data rate
             c=[]
             d=[]
             prev=-1
@@ -148,7 +166,7 @@ def cdf_calculation(a_pwd, a_st, a_stt,a_att):
             i=1
             j=0
             while j < len(a):
-                    cur=int(b[j])
+                    cur=float(b[j])
                     if cur!=prev:
                             if prev>=0:
                                     pctg=1.0*count/traceLen
@@ -165,16 +183,82 @@ def cdf_calculation(a_pwd, a_st, a_stt,a_att):
                     totalPercentage+=pctg
                     c.append(str(prev))
                     d.append(str(int(totalPercentage*100)))  
-            print c
-            print d
+            print c #bitrate
+            print d  #cdf
+            conf_10= cdf_90(c,d)
+            conf_90= cdf_10(c,d)
+            conf_50= cdf_50(c,d)
+
+            print conf_10
+            print conf_90
+            print conf_50            
+
+            sheet.write(ex_c,1,conf_10)
+            sheet.write(ex_c,3,conf_90)
+            sheet.write(ex_c,5,conf_50)
+            
             del x[:]
             del y[:]
             del a[:]
             del b[:]
             del c[:]
-            del d[:]         
-        return(c,d,traceLen)
-              
+            del d[:]   
+        #print ex_c
+        #Now that the sheet is created, it’s very easy to write data to it.
+        # indexing is zero based, row then column
+        #When you’re done, save the workbook (you don’t have to close it like you do with a file object)
+        wbk.save(a_pwdxl)
+
+def cdf_90(c,d):
+    for i in range(0,len(d)):
+        if int(d[i]) ==90:
+            #print "true"
+            #print c[i]
+            return (c[i])
+            break
+        elif int(d[i])>90:
+            c1=float(c[i-1])
+            c2=float(c[i+1])
+            d1=int(d[i-1])
+            d2=int(d[i+1])
+            c_90=((d2-90)*c1+(90-d1)*c2)/((d2-90)+(90-d1))
+            return(c_90)
+            break
+       
+def cdf_50(c,d):
+    for i in range(0,len(d)):
+        if int(d[i]) ==50:
+            #print "true"
+            #print c[i]
+            return (c[i])
+            break
+        elif int(d[i])>50:
+            c1=float(c[i-1])
+            c2=float(c[i+1])
+            d1=int(d[i-1])
+            d2=int(d[i+1])
+            c_50=((d2-50)*c1+(50-d1)*c2)/((d2-50)+(50-d1))
+            return(c_50)
+            break
+
+def cdf_10(c,d):
+    for i in range(0,len(d)):
+        if int(d[i]) ==10:
+            #print "true"
+            #print c[i]
+            return (c[i])
+            break
+        elif int(d[i])>10:
+            c1=float(c[i-1])
+            c2=float(c[i+1])
+            d1=int(d[i-1])
+            d2=int(d[i+1])
+            c_10=((d2-10)*c1+(10-d1)*c2)/((d2-10)+(10-d1))
+            #print c_10
+            return(c_10)
+            break  
+  
+    
 def bubble_sort(b, traceLen):
     t=0
     k=0

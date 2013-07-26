@@ -19,18 +19,23 @@ from pylab import *
 import commands
 import serial
 import time
+import tkFileDialog
 ########################## Function to Quit the UI###################################################
 
 def callback_quit():           #create a event when termination of the event is involved
         os._exit(0) 
 ############################## End###################################################################
+#global ip_tv, ip_client
+#ip_tv=0
+#ip_client=0
 
 
+########################################################################################################################################################        
 def print_graph(raw_f, self):
         x=[]  ###local variable
         y=[]  ###Local variables
         #f=open("/home/wireless/Documents/Wireless_measurement_tool_TPVision/shieldroom_20mhz_external_TCP_0dB_n.txt")
-        f=open(raw_f,"r")
+        f=open(raw_f,"r+")
         while 1:
             line=f.readline()
             a14= line.find('-',0)
@@ -72,13 +77,11 @@ def print_graph(raw_f, self):
         del x[:]
         del y[:]
         f.close()
-
-
         
 # Add the code to  store the iperf results in seperate files
-
+########################################################################################################################################################
 def change_attn(a2):
-        s_att= serial.Serial(port='/dev/ttyS0',baudrate=9600, bytesize=8, parity='N', stopbits=1,timeout=1)
+        s_att= serial.Serial(port='/dev/ttyACM0',baudrate=9600, bytesize=8, parity='N', stopbits=1,timeout=1)
         s_w1= 'sa1 '+ str(a2)
         s_w2= 'sa2 '+ str(a2)
         s_w3= 'sa3 '+ str(a2)
@@ -96,21 +99,94 @@ def change_attn(a2):
         s_att.write(s_w4)
         s_read=s_att.readline()
         print(s_read)
+########################################################################################################
         
+def ping_status(a7,a9,a8,a10):
+        cmd_TX= "ping -i 1 -w 4 "+ a9
+        cmd_RX= "ping a8"
+        print cmd_TX
+        output=commands.getstatusoutput(cmd_TX)
+        i=1
+        a1=len(output)
+        while (i<a1):
+            print output[i]
+            
+            i=i+1
 ########################### Function to create TCP Iperf for Wifi only##################################
 def Wifi_SSH_TCP(raw_f,attn,a5,a7,a9,a_window):
         #print a5 # Run time
-        #print a7 # TV wifi address
-        #print a9 # Client Wifi address
+        #print a7 # AP wifi address
+        #print a9 # TV Wifi address
         print raw_f
         f_raw=open(raw_f,"w")
-        cmd_sr = "iperf -i 0.5" + " -c " + a7  + " -t " + a5  # The TV side
-        cmd_si= "iperf -s -w "+ a_window                            # The client side
-        commands.getoutput(cmd_si)
+        cmd_sr = "iperf -i 0.5" + " -c " + a9  + " -t " + a5  # The TV side iperf client 
+        cmd_si= "iperf -s -w "+ a_window                      # Iperf server
+        print cmd_sr
+        print cmd_si
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=a9, username='wireless',password='wireless',port=22)  
+        stdin, stdout, stderr = ssh.exec_command(cmd_si) ###Iperf Receving traffic
+        output=commands.getstatusoutput(cmd_sr)  ##Iperf  sending traffic
+        #sprint stdout.readlines()
+        #string.split(data, '\n')
+        #output= command.readlines()
+        a1= len(output)
+        i=1
+        while (i<a1):
+            print output[i]
+            f_raw.write(output[i])
+            i=i+1
+            
+        f_raw.close()
+        ssh.close()
+
+#################################END#######################################################################
+#############################################Function to create UDP Iperf for WIfi only####################
+        
+def Wifi_SSH_UDP(raw_f,attn,a5,a7,a9,a_udp):
+        print raw_f
+        f_raw=open(raw_f,"w")
+        cmd_sr = "iperf" + " -c " + a9 +" -i 0.5" + " -u  -b "+ a_udp + " -t " + a5   # The TV side
+        cmd_si= "iperf -s -u -i 0.5 "                       #  The client side
+        print cmd_sr
+        print cmd_si
+        time.sleep(20)
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(hostname=a9, username='wireless',password='wireless',port=22)  
+        stdin, stdout, stderr = ssh.exec_command(cmd_si) ##Iperf receving traffic
+        output=commands.getstatusoutput(cmd_sr) ##Iperf  sending traffic
+        #output= stdout.readlines()
+        #print output
+        a1= len(output)
+        i=1
+        while (i<a1):
+            print output[i]
+            f_raw.write(output[i])
+            i=i+1 
+        f_raw.close()
+        ssh.close()
+
+##################################################################################################################################
+
+def Wifip2p_SSH_TCP(raw_f,attn,a5_p2p,a8,a10,a_window_p2p):
+        #print a5  # Run time
+        #print a7  # TV wifi address
+        #print a9  # Client Wifi address
+        #print a8  # TV P2P address
+        #print a10 # client P2P address
+        print raw_f
+        f_raw=open(raw_f,"w+")
+        cmd_sr = "iperf -i 0.5" + " -c " + a8  + " -t " + a5  # The TV side iperf client 
+        cmd_si= "iperf -s -w "+ a_window                      # Iperf server
+        print cmd_sr
+        print cmd_si
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(hostname=a10, username='wireless',password='wireless',port=22)  
         stdin, stdout, stderr = ssh.exec_command(cmd_sr)
+        output=commands.getstatusoutput(cmd_sr)
         #sprint stdout.readlines()
         #string.split(data, '\n')
         output= stdout.readlines()
@@ -123,25 +199,23 @@ def Wifi_SSH_TCP(raw_f,attn,a5,a7,a9,a_window):
             
         f_raw.close()
         ssh.close()
-
-#################################END#######################################################################
-#############################################Function to create UDP Iperf for WIfi only
-def Wifi_SSH_UDP(raw_f,attn,a5,a7,a9,a_udp):
-        print raw_f
+#######################################################################################################################################################
+def Wifip2p_SSH_UDP(raw_f_p2p,attn,a5_p2p,a8,a10,a_udp_p2p):
+        print raw_f_p2p
         f_raw=open(raw_f,"w")
-        cmd_sr = "iperf" + " -c " + a7 +" -i 0.5" + " -u  -b "+ a_udp + " -t " + a5   # The TV side
+        cmd_sr = "iperf" + " -c " + a9 +" -i 0.5" + " -u  -b "+ a_udp_p2p + " -t " + a5   # The TV side
         cmd_si= "iperf -s -u -i 0.5 "                       #  The client side
         print cmd_sr
         print cmd_si
-        commands.getoutput(cmd_si)
         time.sleep(20)
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=a9, username='wireless',password='wireless',port=22)  
-        stdin, stdout, stderr = ssh.exec_command(cmd_sr)
+        stdin, stdout, stderr = ssh.exec_command(cmd_si)
         #print stdout.readlines()
         #string.split(data, '\n')
-        output= stdout.readlines()
+        output=commands.getstatusoutput(cmd_sr)
+        #output= stdout.readlines()
         #print output
         a1= len(output)
         i=1
@@ -151,6 +225,37 @@ def Wifi_SSH_UDP(raw_f,attn,a5,a7,a9,a_udp):
             i=i+1 
         f_raw.close()
         ssh.close()
+########################################################################################################################################################
+def Wifip2p_SSH_UDP(raw_f,attn,a5,a8,a10,a_udp):
+        #print a5  # Run time
+        #print a7  # TV wifi address
+        #print a9  # Client Wifi address
+        #print a8  # TV P2P address
+        #print a10 # client P2P address
+        print raw_f
+        f_raw=open(raw_f,"w+")
+        cmd_sr = "iperf -i 0.5" + " -c " + a8  + " -t " + a5 + "-u" # The TV side iperf client 
+        cmd_si= "iperf -s -u "+ a_udp                     # Iperf server
+        print cmd_sr
+        print cmd_si
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(hostname=a10, username='wireless',password='wireless',port=22)  
+        stdin, stdout, stderr = ssh.exec_command(cmd_sr) ### running commmands on the ssh clinet
+        #commands.getoutput(cmd_si)  ### running the command on the host
+        output=commands.getstatusoutput(cmd_sr)
+        #sprint stdout.readlines()
+        #string.split(data, '\n')
+        #output= stdout.readlines()
+        a1= len(output)
+        i=1
+        while (i<a1):
+            print output[i]
+            f_raw.write(output[i])
+            i=i+1  
+        f_raw.close()
+        ssh.close()
+########################################################################################################################################################
 
 #def callback_start(event):        
 class Wifi_only(Tkinter.Tk):
@@ -163,24 +268,25 @@ class Wifi_only(Tkinter.Tk):
     def initialize(self):
         self.grid()    #Label
 
+
 ##################################################### Plotting the graph######################################################################
         
 ####################################### end of plotting thr graph##############################################################################
 
         # Attenuation Block
         self.label1= Tkinter.Label(self, text="Attenuator Settings ")
-        self.label1.grid(column=2,row=1,columnspan=1,sticky='EW')
-        self.label1=Tkinter.Label(self, text="Start Atten. (dB)")
-        self.label1.grid(column=1,row=2,columnspan=1,sticky='EW')
-        self.entry1 = Tkinter.Entry(self)
+        self.label1.grid(column=2,row=1,sticky='EW')
+        self.label1=Tkinter.Label(self, text="Start Atten.(dB)")
+        self.label1.grid(column=1,row=2)
+        self.entry1 = Tkinter.Entry(self,width=5)
         self.entry1.delete(0,Tkinter.END)
         self.entry1.insert(0, "0")
-        self.entry1.grid(column=2, row=2, columnspan=1)
+        self.entry1.grid(column=2, row=2)
 
         #Step Attenuation size
         self.label2=Tkinter.Label(self, text="Step (dB)")
         self.label2.grid(column=1,row=3,columnspan=1,sticky='EW')
-        self.entry2 = Tkinter.Entry(self)
+        self.entry2 = Tkinter.Entry(self,width=5)
         self.entry2.delete(0,Tkinter.END)
         self.entry2.insert(0, "3")
         self.entry2.grid(column=2, row=3, columnspan=1)
@@ -188,61 +294,94 @@ class Wifi_only(Tkinter.Tk):
         # Stop  Attenuation
         self.label3=Tkinter.Label(self, text="Stop (dB)")
         self.label3.grid(column=1,row=4,columnspan=1,sticky='EW')
-        self.entry3 = Tkinter.Entry(self)
+        self.entry3 = Tkinter.Entry(self,width=5)
         self.entry3.delete(0,Tkinter.END)
         self.entry3.insert(0, "60")
         self.entry3.grid(column=2, row=4, columnspan=1)
 
-        # Iperf Type
-        self.var_iperf=Tkinter.StringVar(self)
-        self.var_iperf.set("TCP")
-        self.option= Tkinter.OptionMenu(self, self.var_iperf, "TCP", "UDP");
-        self.option.grid(column=10, row=2, columnspan=10)
-    
-        #Iperf Start Time
-        self.label4=Tkinter.Label(self, text= 'Start time [sec]')
-        self.label4.grid(column=10,row=3,columnspan=1)
-        self.entry4 = Tkinter.Entry(self)
-        self.entry4.delete(0,Tkinter.END)
-        self.entry4.insert(0, "5")  
-        self.entry4.grid(column=11, row=3, columnspan=5)
+        self.label=Tkinter.Label(self, text=" Iperf Settings")
+        self.label.grid(column=11, row=1)
+
+        self.label=Tkinter.Label(self, text="Infra.")
+        self.label.grid(column=11, row=2)
         
-        # Iperf Stop Time
+        self.label=Tkinter.Label(self, text="P2P")
+        self.label.grid(column=12, row=2)
+        
+        ############################# Iperf Type WIfi##########################################3
+        self.var_iperf_infra=Tkinter.StringVar(self)
+        self.var_iperf_infra.set("TCP")
+        self.option= Tkinter.OptionMenu(self, self.var_iperf_infra, "TCP", "UDP");
+        self.option.grid(column=10, row=3, columnspan=4)
+
+        ##################### Iperf Type WIfi_p2P##############################################################
+        self.var_iperf_p2p=Tkinter.StringVar(self)
+        self.var_iperf_p2p.set("TCP")
+        self.option= Tkinter.OptionMenu(self, self.var_iperf_p2p, "TCP", "UDP");
+        self.option.grid(column=12, row=3)
+    
+        #####################################Iperf Start Time################################
+        self.label4=Tkinter.Label(self, text= 'Start time [sec]')
+        self.label4.grid(column=10,row=4)
+        self.entry4 = Tkinter.Entry(self,width=4)
+        self.entry4_p2p = Tkinter.Entry(self,width=4)
+        self.entry4.delete(0,Tkinter.END)
+        self.entry4_p2p.delete(0,Tkinter.END)
+        self.entry4.insert(0, "5")
+        self.entry4_p2p.insert(0, "5")
+        self.entry4.grid(column=11, row=4)
+        self.entry4_p2p.grid(column=12, row=4)
+        
+        ################################# Iperf Stop Time#####################################################################
         self.label5=Tkinter.Label(self, text= 'Run Time [sec]')
-        self.label5.grid(column=10,row=4,columnspan=1)
-        self.entry5 = Tkinter.Entry(self)
+        self.label5.grid(column=10,row=5)
+        self.entry5 = Tkinter.Entry(self,width=4)
+        self.entry5_p2p = Tkinter.Entry(self,width=4)
         self.entry5.delete(0,Tkinter.END)
-        self.entry5.insert(0, "6")  
-        self.entry5.grid(column=11,row=4,columnspan=5)
+        self.entry5_p2p.delete(0,Tkinter.END)
+        self.entry5.insert(0, "6")
+        self.entry5_p2p.insert(0, "6")
+        self.entry5.grid(column=11,row=5)
+        self.entry5_p2p.grid(column=12,row=5)
 
 
-        # Iperf UDP Bandwidth
+        #####################Iperf UDP Bandwidth########################################################################
         self.label_udp=Tkinter.Label(self, text= ' UDP Bandwidth ')
-        self.label_udp.grid(column=10,row=5,columnspan=1)
-        self.entry_udp= Tkinter.Entry(self)
+        self.label_udp.grid(column=10,row=6)
+        self.entry_udp= Tkinter.Entry(self,width=4)
+        self.entry_udp_p2p= Tkinter.Entry(self,width=4)
         self.entry_udp.delete(0,Tkinter.END)
-        self.entry_udp.insert(0, "10m")  
-        self.entry_udp.grid(column=11,row=5,columnspan=5)
+        self.entry_udp_p2p.delete(0,Tkinter.END)
+        self.entry_udp.insert(0, "10m")
+        self.entry_udp_p2p.insert(0, "10m")
+        self.entry_udp.grid(column=11,row=6)
+        self.entry_udp_p2p.grid(column=12,row=6)
 
 
-     # TCP/IP Window size
+     ###########################################3 TCP/IP Window size###########################################################
         self.label_window=Tkinter.Label(self, text= 'Window size ')
-        self.label_window.grid(column=10,row=6,columnspan=1)
-        self.entry_window= Tkinter.Entry(self)
+        self.label_window.grid(column=10,row=7)
+        self.entry_window= Tkinter.Entry(self,width=4)
+        self.entry_window_p2p= Tkinter.Entry(self,width=4)
         self.entry_window.delete(0,Tkinter.END)
-        self.entry_window.insert(0, "512k")  
-        self.entry_window.grid(column=11,row=6,columnspan=5)
+        self.entry_window_p2p.delete(0,Tkinter.END)
+        self.entry_window.insert(0, "512k")
+        self.entry_window_p2p.insert(0, "512k")
+        self.entry_window.grid(column=11,row=7)
+        self.entry_window_p2p.grid(column=12,row=7)
 
 
-        # File name to store the raw data
-        self.label6= Tkinter.Label(self, text="Give path and filename to read and write")
+        ##################################File name to store the raw data######################################################
+        self.label6= Tkinter.Label(self, text="Give path to store iperf data")
         self.label6.grid(column=20,row=1,columnspan=1)
+        self.btn = Tkinter.Button(self, text=" Select File", width=10, command=lambda :self.open_dir())
+        self.btn.grid(column=20, row= 2, columnspan=1)
         self.entry6 = Tkinter.Entry(self, width=40)
         self.entry6.delete(0,Tkinter.END)
-        self.entry6.insert(0, "/home/wireless/Documents/Wireless_measurement_tool_TPVision/measurement_6-10-2013/")  
-        self.entry6.grid(column=20, row=2, columnspan=10)
+        self.entry6.insert(0, "/home/wireless/Documents/Wireless_measurement_tool_TPVision/dump")  
+        self.entry6.grid(column=20, row=3, columnspan=10)
 
-        # IP addresses
+        ##################IP addresses#########################################################################################
         self.label7= Tkinter.Label(self, text="IP addresses of the Devices")
         self.label7.grid(column=30,row=1,columnspan=15)
         self.label7= Tkinter.Label(self, text="AP Wifi address")
@@ -276,9 +415,7 @@ class Wifi_only(Tkinter.Tk):
         self.entry10.delete(0,Tkinter.END)
         self.entry10.insert(0, "2.2.2.2")  
         self.entry10.grid(column=31, row=5, columnspan=5)
-   
-     
-
+      
         self.label11= Tkinter.Label(self, text="P2P client Ethernet")
         self.label11.grid(column=30,row=6,columnspan=1)
         self.entry11 = Tkinter.Entry(self)
@@ -300,11 +437,24 @@ class Wifi_only(Tkinter.Tk):
         self.btn.grid(column=50, row= 5, columnspan=1)
 
 # Drop down Menu to select the measurement type
+        self.label= Tkinter.Label(self, text="Select the Measurment type")
+        self.label.grid(column=20, row= 4, columnspan=1)
         self.var_exp=Tkinter.StringVar(self)
         self.var_exp.set("Wifi only")
-        self.option= Tkinter.OptionMenu(self, self.var_exp, "Wifi only    ", "Wifi with P2P GO" ," Wifi with P2P GO with traffic");
-        self.option.grid(column=2, row=5, columnspan=50)
-          
+        self.option= Tkinter.OptionMenu(self, self.var_exp, "WI-FI only", "WI-FI with P2P GO" ,"WI-FI with P2P GO without traffic", " WI-FI with P2P GO with traffic","WI-FI with P2P forwarding")
+        self.option.grid(column=20, row=5)
+
+# Buttons select the configuration of the GO and the client
+        #using lambda to passing arguments to command-function
+        self.btn = Tkinter.Button(self, text=" Configure GO", width=10, command= self.open_terminal_1) #Create a  new button widget
+        self.btn.grid(column=20, row= 7, columnspan=1)
+        self.btn=Tkinter.Button(self, text=" Configure P2P client", width=15, command=  self.open_terminal_2)
+        self.btn.grid(column=21 ,row= 7, columnspan=1)
+        
+        #print ip_tv
+
+###########Local function definitions##################################################3
+ 
     def callback_quit(self):
         self.sys.quit()    
 
@@ -312,20 +462,24 @@ class Wifi_only(Tkinter.Tk):
         a1=self.entry1.get() ## Set attenuation
         a2=self.entry2.get() ##Set attenuation step
         a3=self.entry3.get() ## Stop attenuation
-        a4=self.entry4.get() ## Start time
-        a5= self.entry5.get() ##Run time
+        a4=self.entry4.get() ## Start time INfra
+        a4_p2p=self.entry4_p2p.get() # Start time P2P
+        a5= self.entry5.get() ########Run time Infra
+        a5_p2p= self.entry5_p2p.get() ## Run time P2P
         a6=self.entry6.get() ## path
-        a7=self.entry7.get() ## TV wifi address
+        a7=self.entry7.get() ## AP Wifi address
         a8=self.entry8.get() ##TV P2P address
-        a9=self.entry9.get() ##Client Wifi address
+        a9=self.entry9.get() ##TV wifi address
         a10=self.entry10.get() ##Client P2P address
         a11=self.entry10.get()## p2P client Ethernet
-        a_udp=self.entry_udp.get()
-        a_window=self.entry_window.get()
-        a12=self.var_iperf.get()
+        a_udp=self.entry_udp.get()#### UDP bandwidth Infra
+        a_udp_p2p=self.entry_udp_p2p.get()#### UDP bandwidth Infra
+        a_window=self.entry_window.get() ###TCP/IP window size
+        a_window_p2p=self.entry_window.get() ### UDP Size
+        a12=self.var_iperf_infra.get()  ### Iperf choice , Infra
+        a12_p2p=self.var_iperf_p2p.get() ###Iperf choice , P2P
         print a12
         a13= self.var_exp.get()    ## Experiment Option
-        
         attn=int(a1)
         attn_st=int(a2)
         try:
@@ -335,18 +489,105 @@ class Wifi_only(Tkinter.Tk):
         
         if a13 == "Wifi only" and a12=="TCP":
            while(attn <= int(a3)):
+              a6=a6+ "/secenario1/"
+              if not os.path.exists(a6):os.makedirs(a6)
               raw_f=a6+"shieldroom_20mhz_external_TCP_"+str(attn)+"dB.txt"
+              ping_status(a7,a9,a8,a10)
               Wifi_SSH_TCP(raw_f,attn,a5,a7,a9,a_window)
               change_attn(attn)
               attn=attn+attn_st
               print print_graph(raw_f,self)
         elif a13=="Wifi only" and a12=="UDP":
            while(attn <= int(a3)):
+              a6=a6+ "/secenario1/"
+              if not os.path.exists(a6):os.makedirs(a6)
               raw_f=a6+"shieldroom_20mhz_external_UDP_"+str(attn)+"dB.txt"
+              ping_status(a7,a9,a8,a10)
               Wifi_SSH_UDP(raw_f,attn,a5,a7,a9,a_udp)
               change_attn(attn)
               attn=attn+attn_st
               print print_graph(raw_f,self)
+        elif a13=="WI-FI with P2P GO" and a12=="TCP":
+           while(attn <= int(a3)):
+              a6=a6+ "/secenario2/"
+              if not os.path.exists(a6):os.makedirs(a6)
+              raw_f=a6+"shieldroom_20mhz_external_TCP_"+str(attn)+"dB.txt"
+              ping_status(a7,a9,a8,a10)
+              Wifi_SSH_TCP(raw_f,attn,a5,a7,a9,a_window)
+              change_attn(attn)
+              attn=attn+attn_st
+              print print_graph(raw_f,self)
+        elif a13=="WI-FI with P2P GO" and a12=="UDP":
+           while(attn <= int(a3)):
+              a6=a6+ "/secenario2/"
+              if not os.path.exists(a6):os.makedirs(a6)
+              raw_f=a6+"shieldroom_20mhz_external_UDP_"+str(attn)+"dB.txt"
+              ping_status(a7,a9,a8,a10)
+              Wifi_SSH_UDP(raw_f,attn,a5,a7,a9,a_window)
+              change_attn(attn)
+              attn=attn+attn_st
+              print print_graph(raw_f,self)
+        
+        elif a13=="WI-FI with P2P GO without traffic" and a12=="TCP":
+           while(attn <= int(a3)):
+              raw_f=a6+"/scenario3/"+"shieldroom_20mhz_external_TCP_"+str(attn)+"dB.txt"
+              ping_status(a7,a9,a8,a10)
+              Wifi_SSH_TCP(raw_f,attn,a5,a7,a9,a_window)
+              change_attn(attn)
+              attn=attn+attn_st
+              print print_graph(raw_f,self)
+
+        elif a13=="WI-FI with P2P GO without traffic" and a12=="UDP":
+           while(attn <= int(a3)):
+              raw_f=a6+"/scenario3/"+"shieldroom_20mhz_external_UDP_"+str(attn)+"dB.txt"
+              ping_status(a7,a9,a8,a10)
+              Wifi_SSH_TCP(raw_f,attn,a5,a7,a9,a_window)
+              change_attn(attn)
+              attn=attn+attn_st
+              print print_graph(raw_f,self)
+              
+        elif a13=="WI-FI with P2P GO with traffic" and a12=="TCP":
+           if  a12_p2p=="TCP":
+                while(attn <= int(a3)):
+                      raw_f=a6+"/scenario4/infra/"+"shieldroom_20mhz_external_TCP_"+str(attn)+"dB.txt"
+                      Wifi_SSH_TCP(raw_f,attn,a5,a7,a9,a_window)
+                      delay(5)
+                      raw_f_p2p=a6+"/scenario4/p2p/"+"p2pshieldroom_20mhz_external_TCP_"+str(attn)+"dB.txt"
+                      Wifip2p_SSH_TCP(raw_f_p2p,attn,a5_p2p,a8,a10,a_udp_p2p)
+                      change_attn(attn)
+                      attn=attn+attn_st
+                      print print_graph(raw_f,self)
+           elif a12_p2p=="UDP":
+                while(attn <= int(a3)):
+                      raw_f=a6+"/scenario4/infra/"+"shieldroom_20mhz_external_TCP_"+str(attn)+"dB.txt"
+                      Wifi_SSH_TCP(raw_f,attn,a5,a7,a9,a_window)
+                      delay(5)
+                      raw_f_p2p=a6+"/scenario4/p2p"+"p2pshieldroom_20mhz_external_UDP_"+str(attn)+"dB.txt"
+                      Wifip2p_SSH_TCP(raw_f_p2p,attn,a5_p2p,a8,a10,a_udp_p2p)
+                      change_attn(attn)
+                      attn=attn+attn_st
+                      print print_graph(raw_f_p2p,self)
+           elif a13=="WI-FI with P2P GO with traffic" and a12=="UDP":
+                if  a12_p2p=="TCP":
+                        while(attn <= int(a3)):
+                              raw_f=a6+"/scenario4/infra/"+"shieldroom_20mhz_external_UDP_"+str(attn)+"dB.txt"
+                              Wifi_SSH_TCP(raw_f,attn,a5,a7,a9,a_window)
+                              delay(5)
+                              raw_f_p2p=a6+"/scenario4/p2p/"+"p2pshieldroom_20mhz_external_TCP_"+str(attn)+"dB.txt"
+                              Wifip2p_SSH_TCP(raw_f_p2p,attn,a5_p2p,a7,a9,a_window_p2p)
+                              change_attn(attn)
+                              attn=attn+attn_st
+                              print print_graph(raw_f_p2p,self)
+                elif a12_p2p=="UDP":
+                        while(attn <= int(a3)):
+                              raw_f=a6+"/scenario4/infra/"+"shieldroom_20mhz_external_UDP_"+str(attn)+"dB.txt"
+                              Wifi_SSH_TCP(raw_f,attn,a5,a7,a9,a_window)
+                              delay(5)
+                              raw_f_p2p=a6+"/scenario4/p2p/"+"p2pshieldroom_20mhz_external_UDP_"+str(attn)+"dB.txt"
+                              Wifip2p_SSH_UDP(raw_f_p2p,attn,a5_p2p,a8,a10,a_udp_p2p)
+                              change_attn(attn)
+                              attn=attn+attn_st
+                              print print_graph(raw_f_p2p,self)  
         else:
               callback_quit()
 
@@ -364,6 +605,22 @@ class Wifi_only(Tkinter.Tk):
 
         self.label= Tkinter.Label(self, text="Iperf vs Time plot")
         self.label.grid(column=15, row= 19, columnspan=1)
+
+    def open_terminal_1(self):
+        ip_tv=self.entry9.get()
+        cmd_str= "gnome-terminal -e 'bash -c \"sudo ssh -l wireless %s; exec bash\"'" %(ip_tv)
+        os.system(cmd_str)
+
+    def open_terminal_2(self):
+        ip_client=self.entry11.get()
+        cmd_str= "gnome-terminal -e 'bash -c \"sudo ssh -l wireless %s; exec bash\"'" %(ip_client)
+        os.system(cmd_str)
+      
+    def open_dir(self):
+        self.entry6.delete(0,Tkinter.END)
+        dirname=tkFileDialog.askdirectory(parent=self,initialdir="/", title='Please select a Direcotry')
+        self.entry6.insert(0, dirname)  
+        self.entry6.grid(column=20, row=3, columnspan=5)
 
       # Inserting the Canvas
 if __name__ == "__main__":

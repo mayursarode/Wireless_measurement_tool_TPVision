@@ -1,3 +1,4 @@
+
 # Header files and constants
 from Tkinter import * #importing the Tkinter libraries
 import tkFont
@@ -7,7 +8,7 @@ import webbrowser
 import os
 import subprocess
 
-#import Wi-Fi_only.py
+#import Wi-Fi_only.py0
 new=2
 url="http://192.168.1.1"
 
@@ -19,7 +20,7 @@ def callback_Wifi_measurement(event):
             frame=Frame(root1,width=1000, height=1000)
             frame.pack()
             root1.mainloop()
-            #subprocess.Popen("Wi-Fi_only.py 1", shell = True)
+            subprocess.Popen("Wi-Fi_only.py 1", shell = True)
             #os.system("Wi-Fi_only_code.py 1")
 
 def callback_Video_benchmarking(event):

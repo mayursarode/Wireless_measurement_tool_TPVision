@@ -1,7 +1,0 @@
-from Tkinter import * #importing the Tkinter libraries
-import tkFont
-from PIL import Image,ImageTk
-
-def quit():
-    import sys; sys.exit()
-
