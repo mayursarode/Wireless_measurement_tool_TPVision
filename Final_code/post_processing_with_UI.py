@@ -121,7 +121,7 @@ def cdf_calculation(a_pwdxl,a_pwd, a_st, a_stt,a_att,a_tab):
         
         while a_att<=a_stt:
             ex_c=ex_c+a_st
-            fopen=a_pwd+"/shieldroom_20mhz_external_TCP_"+ str(a_att) +"dB.txt"
+            fopen=a_pwd+"/shieldroom_40mhz_external_TCP_"+ str(a_att) +"dB.txt"
             print fopen
             fd1=open(fopen)
             a_att=a_att+a_st

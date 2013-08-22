@@ -1,5 +1,5 @@
 #!/usr/bin/python
-#Modificaiton  Date: 6/7/2013
+#Modificaiton  Date: 8/21/2013
 # Adding the file handling option
 # Added directory creation command
 # Added UDP fucntionality
@@ -20,6 +20,8 @@ import commands
 import serial
 import time
 import tkFileDialog
+import time
+
 ########################## Function to Quit the UI###################################################
 
 def callback_quit():           #create a event when termination of the event is involved
@@ -77,8 +79,43 @@ def print_graph(raw_f, self):
         del x[:]
         del y[:]
         f.close()
+
+########################################################################################################################################################
+
+
+def bt_voice(a9):
+        cmd_bt="aplay -N -D rocco /home/wireless/Documents/scripts/sin_wave_1KHz.wav -f S24_LE -r48000 "
+        print "Send BT audio to the Laptop"
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(hostname=a9, username='wireless',password='wireless',port=22)  
+        stdin, stdout, stderr = ssh.exec_command(cmd_bt)
+        time.sleep(1)
         
 # Add the code to  store the iperf results in seperate files
+
+#####################################Reset Attenuation################################################################3333
+def reset_attn():
+        s_att= serial.Serial(port='/dev/ttyACM0',baudrate=9600, bytesize=8, parity='N', stopbits=1,timeout=1)
+        s_w1= 'sa1 '+ str(0)
+        s_w2= 'sa2 '+ str(0)
+        s_w3= 'sa3 '+ str(0)
+        s_w4= 'sa4 '+ str(0)
+        
+        s_att.write(s_w1)
+        s_read=s_att.readline()
+        print(s_read)        
+        s_att.write(s_w2)
+        s_read=s_att.readline()
+        print(s_read)        
+        s_att.write(s_w3)
+        s_read=s_att.readline()
+        print(s_read)        
+        s_att.write(s_w4)
+        s_read=s_att.readline()
+        print(s_read)
+
+
 ########################################################################################################################################################
 def change_attn(a2):
         s_att= serial.Serial(port='/dev/ttyACM0',baudrate=9600, bytesize=8, parity='N', stopbits=1,timeout=1)
@@ -128,6 +165,7 @@ def Wifi_SSH_TCP(raw_f,attn,a5,a7,a9,a_window):
         ssh.connect(hostname=a9, username='wireless',password='wireless',port=22)  
         stdin, stdout, stderr = ssh.exec_command(cmd_si) ###Iperf Receving traffic
         output=commands.getstatusoutput(cmd_sr)  ##Iperf  sending traffic
+        #print stdout
         #sprint stdout.readlines()
         #string.split(data, '\n')
         #output= command.readlines()
@@ -141,6 +179,37 @@ def Wifi_SSH_TCP(raw_f,attn,a5,a7,a9,a_window):
         f_raw.close()
         ssh.close()
 
+#############################################################################################################
+def Wifi_SSH_TCP_BT(raw_f,attn,a5,a7,a9,a_window):
+        #print a5 # Run time
+        #print a7 # AP wifi address
+        #print a9 # TV Wifi address
+        print raw_f
+        f_raw=open(raw_f,"w")
+        cmd_sr = "iperf -i 0.5" + " -c " + a9  + " -t " + a5  # The TV side iperf client 
+        cmd_si= "iperf -s -w "+ a_window                      # Iperf server
+        print cmd_sr
+        print cmd_si
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(hostname=a9, username='wireless',password='wireless',port=22)  
+        stdin, stdout, stderr = ssh.exec_command(cmd_si) ###Iperf Receving traffic
+        bt_voice(a9)
+        print 'start iperf'
+        output=commands.getstatusoutput(cmd_sr)  ##Iperf  sending traffic
+        #sprint stdout.readlines()
+        #string.split(data, '\n')
+        #output= command.readlines()
+        a1= len(output)
+        i=1
+        while (i<a1):
+            print output[i]
+            f_raw.write(output[i])
+            i=i+1
+            
+        f_raw.close()
+        ssh.close()
+#######################################################################################################################
 #################################END#######################################################################
 #############################################Function to create UDP Iperf for WIfi only####################
         
@@ -168,8 +237,7 @@ def Wifi_SSH_UDP(raw_f,attn,a5,a7,a9,a_udp):
         f_raw.close()
         ssh.close()
 
-##################################################################################################################################
-
+##################################################################################################
 def Wifip2p_SSH_TCP(raw_f,attn,a5_p2p,a8,a10,a_window_p2p):
         #print a5  # Run time
         #print a7  # TV wifi address
@@ -182,13 +250,19 @@ def Wifip2p_SSH_TCP(raw_f,attn,a5_p2p,a8,a10,a_window_p2p):
         cmd_si= "iperf -s -w "+ a_window                      # Iperf server
         print cmd_sr
         print cmd_si
+
+###########################################################################################################
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(hostname=a10, username='wireless',password='wireless',port=22)  
+        ssh.connect(hostname=a9, username='wireless',password='wireless',port=22)  
         stdin, stdout, stderr = ssh.exec_command(cmd_sr)
-        output=commands.getstatusoutput(cmd_sr)
-        #sprint stdout.readlines()
-        #string.split(data, '\n')
+        output=stdout.read()
+        ####################################SSH on the P2P laptop####################################
+        ssh_p2p = paramiko.SSHClient()
+        ssh_p2p.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh_p2p.connect(hostname=a10, username='wireless',password='wireless',port=22)  
+        stdin, stdout, stderr = ssh_p2p.exec_command(cmd_si)
+        #########################################SSH on P2P laptop###################################
         output= stdout.readlines()
         a1= len(output)
         i=1
@@ -207,16 +281,18 @@ def Wifip2p_SSH_UDP(raw_f_p2p,attn,a5_p2p,a8,a10,a_udp_p2p):
         cmd_si= "iperf -s -u -i 0.5 "                       #  The client side
         print cmd_sr
         print cmd_si
-        time.sleep(20)
+###########################################################################################################
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=a9, username='wireless',password='wireless',port=22)  
-        stdin, stdout, stderr = ssh.exec_command(cmd_si)
-        #print stdout.readlines()
-        #string.split(data, '\n')
-        output=commands.getstatusoutput(cmd_sr)
-        #output= stdout.readlines()
-        #print output
+        stdin, stdout, stderr = ssh.exec_command(cmd_sr)
+        output=stdout.read()
+        ####################################SSH on the P2P laptop####################################
+        ssh_p2p = paramiko.SSHClient()
+        ssh_p2p.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh_p2p.connect(hostname=a10, username='wireless',password='wireless',port=22)  
+        stdin, stdout, stderr = ssh_p2p.exec_command(cmd_si)
+        #########################################SSH on P2P laptop###################################
         a1= len(output)
         i=1
         while (i<a1):
@@ -283,7 +359,7 @@ class Wifi_only(Tkinter.Tk):
         self.entry1.insert(0, "0")
         self.entry1.grid(column=2, row=2)
 
-        #Step Attenuation size
+        #Step Attenuation block
         self.label2=Tkinter.Label(self, text="Step (dB)")
         self.label2.grid(column=1,row=3,columnspan=1,sticky='EW')
         self.entry2 = Tkinter.Entry(self,width=5)
@@ -291,7 +367,7 @@ class Wifi_only(Tkinter.Tk):
         self.entry2.insert(0, "3")
         self.entry2.grid(column=2, row=3, columnspan=1)
 
-        # Stop  Attenuation
+        # Stop  Attenuation block
         self.label3=Tkinter.Label(self, text="Stop (dB)")
         self.label3.grid(column=1,row=4,columnspan=1,sticky='EW')
         self.entry3 = Tkinter.Entry(self,width=5)
@@ -299,6 +375,12 @@ class Wifi_only(Tkinter.Tk):
         self.entry3.insert(0, "60")
         self.entry3.grid(column=2, row=4, columnspan=1)
 
+        
+
+        self.res = Tkinter.Button(self, text=" Attn. Reset", width=10, command= reset_attn) #Create a  new button widget
+        self.res.grid(column=2, row= 6, columnspan=1)
+ 
+########Iperf Settings ######################################################
         self.label=Tkinter.Label(self, text=" Iperf Settings")
         self.label.grid(column=11, row=1)
 
@@ -441,7 +523,7 @@ class Wifi_only(Tkinter.Tk):
         self.label.grid(column=20, row= 4, columnspan=1)
         self.var_exp=Tkinter.StringVar(self)
         self.var_exp.set("Wifi only")
-        self.option= Tkinter.OptionMenu(self, self.var_exp, "WI-FI only", "WI-FI with P2P GO" ,"WI-FI with P2P GO without traffic", " WI-FI with P2P GO with traffic","WI-FI with P2P forwarding")
+        self.option= Tkinter.OptionMenu(self, self.var_exp, "WI-FI only", "WI-FI with P2P GO" ,"WI-FI with P2P GO without traffic", " WI-FI with P2P GO with traffic"," WI-FI with P2P forwarding","WI-FI+BT")
         self.option.grid(column=20, row=5)
 
 # Buttons select the configuration of the GO and the client
@@ -497,6 +579,18 @@ class Wifi_only(Tkinter.Tk):
               change_attn(attn)
               attn=attn+attn_st
               print print_graph(raw_f,self)
+              bt_voice(a9)
+        elif a13=="WI-FI+BT":
+           while(attn <= int(a3)):
+              a6=a6+ "/secenariobt/"
+              if not os.path.exists(a6):os.makedirs(a6)
+              raw_f=a6+"shieldroom_20mhz_external_TCP_"+str(attn)+"dB.txt"
+              ping_status(a7,a9,a8,a10)
+              Wifi_SSH_TCP_BT(raw_f,attn,a5,a7,a9,a_window)
+              change_attn(attn)
+              attn=attn+attn_st
+              print print_graph(raw_f,self)
+              
         elif a13=="Wifi only" and a12=="UDP":
            while(attn <= int(a3)):
               a6=a6+ "/secenario1/"
@@ -587,7 +681,7 @@ class Wifi_only(Tkinter.Tk):
                               Wifip2p_SSH_UDP(raw_f_p2p,attn,a5_p2p,a8,a10,a_udp_p2p)
                               change_attn(attn)
                               attn=attn+attn_st
-                              print print_graph(raw_f_p2p,self)  
+                              print print_graph(raw_f_p2p,self)
         else:
               callback_quit()
 
