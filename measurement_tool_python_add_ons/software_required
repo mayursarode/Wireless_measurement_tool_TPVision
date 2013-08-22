@@ -1,0 +1,11 @@
+Pycrypto
+
+apt-get install python-pycryptopp
+
+sudo apt-get install python-crypto
+
+apt-get install python-crypto
+apt-get install python-matplotlib
+sudo apt-get install python-imaging-tk
+
+install libpng freetype
