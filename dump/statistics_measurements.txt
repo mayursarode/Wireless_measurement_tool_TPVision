@@ -1,0 +1,17 @@
+Inital Attenuation :0
+Attenuation Step :3
+Stop Attenuation:60
+Start Time Wifi:5
+Start time P2P:5
+Run time Wifi:6
+Run time P2P:6
+Iperf results Path:/home/wireless/Documents/Wireless_measurement_tool_TPVision/dump
+Access Point IP address:192.168.1.100
+TV P2P address:2.2.2.1
+TV Wifi address:192.168.1.200
+Client P2P address:2.2.2.2
+Client ethernet:2.2.2.2
+Iperf Choice Wifi:TCP
+Iperf Choice P2P:TCP
+Measurement option:Wifi only
+Wireless Standard:802.11n(2G)

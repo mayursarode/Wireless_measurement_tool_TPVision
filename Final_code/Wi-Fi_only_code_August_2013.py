@@ -138,9 +138,9 @@ def change_attn(a2):
         
 ########################################################################################################
         
-def ping_status(a7,a9,a8,a10):
-        cmd_TX= "ping -i 1 -w 4 "+ a9
-        cmd_RX= "ping a8"
+def ping_status(a_s):
+        cmd_TX= "ping -i 1 -w 4 "+ a_s
+        #cmd_RX= "ping a8"
         print cmd_TX
         output=commands.getstatusoutput(cmd_TX)
         i=1
@@ -528,14 +528,14 @@ class Wifi_only(Tkinter.Tk):
         self.label.grid(column=20, row= 4, columnspan=1)
         self.var_exp=Tkinter.StringVar(self)
         self.var_exp.set("Wifi only")
-        self.option= Tkinter.OptionMenu(self, self.var_exp, "WI-FI only", "WI-FI with P2P GO" ,"WI-FI with P2P GO without traffic", " WI-FI with P2P GO with traffic"," WI-FI with P2P forwarding","WI-FI+BT")
+        self.option= Tkinter.OptionMenu(self, self.var_exp, "WI-FI only", "WI-FI with P2P GO" ,"WI-FI with P2P GO without traffic", "WI-FI with P2P GO with traffic"," WI-FI with P2P forwarding","WI-FI+BT")
         self.option.grid(column=20, row=5)
 ################################################# Wifi Type#####################################################################
         self.label= Tkinter.Label(self, text="WiFi standard")
         self.label.grid(column=21, row= 4, columnspan=1)
         self.var_std=Tkinter.StringVar(self)
         self.var_std.set("802.11n(2G)")
-        self.option= Tkinter.OptionMenu(self, self.var_std, "802.11n(2G)", "802.11n(5G)" ,"802.11ac(2G)", "802.11n(5G)")
+        self.option= Tkinter.OptionMenu(self, self.var_std, "802.11n(2G)", "802.11n(5G)" ,"802.11ac(2G)", "802.11ac(5G)")
         self.option.grid(column=21, row=5)
 
 ##################################################################################################################################
@@ -592,11 +592,11 @@ class Wifi_only(Tkinter.Tk):
         except OSError:
                 pass
 
-        if a13 == "802.11n(2G)":
+        if a_std == "802.11n(2G)":
                 a_bw=20
-        elif a13== "802.11n(5G)":
+        elif a_std== "802.11n(5G)":
                 a_bw=40
-        elif a13== "802.11ac(2G)":
+        elif a_std== "802.11ac(2G)":
                 a_bw=20
         else:
                 a_bw=80
@@ -606,7 +606,8 @@ class Wifi_only(Tkinter.Tk):
               a6=a6+ "/secenario1/"
               if not os.path.exists(a6):os.makedirs(a6)
               raw_f=a6+"shieldroom_"+str(a_bw)+"_external_TCP_"+str(attn)+"dB.txt"
-              ping_status(a7,a9,a8,a10)
+              a_s=a9
+              ping_status(a_s)
               Wifi_SSH_TCP(raw_f,attn,a5,a7,a9,a_window)
               change_attn(attn)
               attn=attn+attn_st
@@ -617,7 +618,8 @@ class Wifi_only(Tkinter.Tk):
               a6=a6+ "/secenariobt/"
               if not os.path.exists(a6):os.makedirs(a6)
               raw_f=a6+"shieldroom_"+str(a_bw)+"_external_TCP_"+str(attn)+"dB.txt"
-              ping_status(a7,a9,a8,a10)
+              a_s=a9
+              ping_status(a_s)
               Wifi_SSH_TCP_BT(raw_f,attn,a5,a7,a9,a_window)
               change_attn(attn)
               attn=attn+attn_st
@@ -628,7 +630,8 @@ class Wifi_only(Tkinter.Tk):
               a6=a6+ "/secenario1/"
               if not os.path.exists(a6):os.makedirs(a6)
               raw_f=a6+"shieldroom_"+str(a_bw)+"_external_UDP_"+str(attn)+"dB.txt"
-              ping_status(a7,a9,a8,a10)
+              a_s=a9
+              ping_status(a_s)
               Wifi_SSH_UDP(raw_f,attn,a5,a7,a9,a_udp)
               change_attn(attn)
               attn=attn+attn_st
@@ -638,7 +641,8 @@ class Wifi_only(Tkinter.Tk):
               a6=a6+ "/secenario2/"
               if not os.path.exists(a6):os.makedirs(a6)
               raw_f=a6+"shieldroom_"+str(a_bw)+"_external_TCP_"+str(attn)+"dB.txt"
-              ping_status(a7,a9,a8,a10)
+              a_s=a9
+              ping_status(a_s)
               Wifi_SSH_TCP(raw_f,attn,a5,a7,a9,a_window)
               change_attn(attn)
               attn=attn+attn_st
@@ -648,7 +652,8 @@ class Wifi_only(Tkinter.Tk):
               a6=a6+ "/secenario2/"
               if not os.path.exists(a6):os.makedirs(a6)
               raw_f=a6+"shieldroom_"+str(a_bw)+"_external_UDP_"+str(attn)+"dB.txt"
-              ping_status(a7,a9,a8,a10)
+              a_s=a_9
+              ping_status(a_s)
               Wifi_SSH_UDP(raw_f,attn,a5,a7,a9,a_window)
               change_attn(attn)
               attn=attn+attn_st
@@ -656,11 +661,12 @@ class Wifi_only(Tkinter.Tk):
         
         elif a13=="WI-FI with P2P GO without traffic" and a12=="TCP":
            while(attn <= int(a3)):
-              raw_f=a6+"/scenario3/"
+              a6=a6+"/scenario3/"
               if not os.path.exists(a6):os.makedirs(a6)
               raw_f=a6+"shieldroom_"+str(a_bw)+"_external_TCP_"+str(attn)+"dB.txt"
               if not os.path.exists(a6):os.makedirs(a6)
-              ping_status(a7,a9,a8,a10)
+              a_s=a9
+              ping_status(a_s)
               Wifi_SSH_TCP(raw_f,attn,a5,a7,a9,a_window)
               change_attn(attn)
               attn=attn+attn_st
@@ -668,10 +674,11 @@ class Wifi_only(Tkinter.Tk):
 
         elif a13=="WI-FI with P2P GO without traffic" and a12=="UDP":
            while(attn <= int(a3)):
-              raw_f=a6+"/scenario3/"
+              a6=a6+"/scenario3/"
               if not os.path.exists(a6):os.makedirs(a6)
               raw_f=a6+"shieldroom_"+str(a_bw)+"_external_UDP_"+str(attn)+"dB.txt"
-              ping_status(a7,a9,a8,a10)
+              a_s=a9
+              ping_status(a_s)
               Wifi_SSH_TCP(raw_f,attn,a5,a7,a9,a_window)
               change_attn(attn)
               attn=attn+attn_st
@@ -680,26 +687,32 @@ class Wifi_only(Tkinter.Tk):
         elif a13=="WI-FI with P2P GO with traffic" and a12=="TCP":
            if  a12_p2p=="TCP":
                 while(attn <= int(a3)):
-                      raw_f=a6+"/scenario4/infra/"
+                      a6_wifi=a6+"/scenario4/infra/"
+                      a_s=a9
+                      ping_status(a_s)
                       if not os.path.exists(a6):os.makedirs(a6)
-                      raw_f=a6+"shieldroom_"+str(a_bw)+"_external_TCP_"+str(attn)+"dB.txt"
+                      raw_f=a6_wifi+"shieldroom_"+str(a_bw)+"_external_TCP_"+str(attn)+"dB.txt"
                       Wifi_SSH_TCP(raw_f,attn,a5,a7,a9,a_window)
                       delay(5)
-                      raw_f_p2p=a6+"/scenario4/p2p/"
+                      a6_p2p=a6+"/scenario4/P2P/"
                       if not os.path.exists(a6):os.makedirs(a6)
-                      raw_f=a6+"p2pshieldroom_"+str(a_bw)+"_external_TCP_"+str(attn)+"dB.txt"
+                      raw_f_p2p=a6_p2p+"p2pshieldroom_"+str(a_bw)+"_external_TCP_"+str(attn)+"dB.txt"
                       Wifip2p_SSH_TCP(raw_f_p2p,attn,a5_p2p,a8,a10,a_udp_p2p)
                       change_attn(attn)
                       attn=attn+attn_st
                       print print_graph(raw_f,self)
            elif a12_p2p=="UDP":
                 while(attn <= int(a3)):
-                      raw_f=a6+"/scenario4/infra/"
+                      a_s=a9
+                      ping_status(a_s)
+                      a6_wifi=a6+"/scenario4/Wifi/"
                       if not os.path.exists(a6):os.makedirs(a6)
-                      raw_f=a6+"shieldroom_"+str(a_bw)+"_external_UDP_"+str(attn)+"dB.txt"
+                      
+                      raw_f=a6_wifi+"shieldroom_"+str(a_bw)+"_external_UDP_"+str(attn)+"dB.txt"
                       Wifi_SSH_TCP(raw_f,attn,a5,a7,a9,a_window)
                       delay(5)
-                      raw_f=a6+"p2pshieldroom_"+str(a_bw)+"_external_UDP_"+str(attn)+"dB.txt"
+                      a6_p2p=a6+"/scenario4/P2P/"
+                      raw_f_p2p=a6_p2p+"p2pshieldroom_"+str(a_bw)+"_external_UDP_"+str(attn)+"dB.txt"
                       if not os.path.exists(a6):os.makedirs(a6)
                       Wifip2p_SSH_TCP(raw_f_p2p,attn,a5_p2p,a8,a10,a_udp_p2p)
                       change_attn(attn)
@@ -708,11 +721,13 @@ class Wifi_only(Tkinter.Tk):
            elif a13=="WI-FI with P2P GO with traffic" and a12=="UDP":
                 if  a12_p2p=="TCP":
                         while(attn <= int(a3)):
-                              raw_f=a6+"shieldroom_"+str(a_bw)+"_external_TCP_"+str(attn)+"dB.txt"
+                              a6_wifi=a6+"/scenario4/Wifi/"
+                              raw_f=a6_wifi+"shieldroom_"+str(a_bw)+"_external_TCP_"+str(attn)+"dB.txt"
                               if not os.path.exists(a6):os.makedirs(a6)
                               Wifi_SSH_TCP(raw_f,attn,a5,a7,a9,a_window)
                               delay(5)
-                              raw_f=a6+"p2pshieldroom_"+str(a_bw)+"_external_TCP_"+str(attn)+"dB.txt"
+                              a6_p2p=a6+"/scenario4/P2P/"
+                              raw_f_p2p=a6_p2p+"p2pshieldroom_"+str(a_bw)+"_external_TCP_"+str(attn)+"dB.txt"
                               if not os.path.exists(a6):os.makedirs(a6)
                               Wifip2p_SSH_TCP(raw_f_p2p,attn,a5_p2p,a7,a9,a_window_p2p)
                               change_attn(attn)
@@ -720,11 +735,13 @@ class Wifi_only(Tkinter.Tk):
                               print print_graph(raw_f_p2p,self)
                 elif a12_p2p=="UDP":
                         while(attn <= int(a3)):
-                              raw_f=a6+"shieldroom_"+str(a_bw)+"_external_UDP_"+str(attn)+"dB.txt"
+                              a6_wifi=a6+"/scenario4/Wifi/"
+                              raw_f=a6_wifi+"shieldroom_"+str(a_bw)+"_external_UDP_"+str(attn)+"dB.txt"
                               if not os.path.exists(a6):os.makedirs(a6)
                               Wifi_SSH_TCP(raw_f,attn,a5,a7,a9,a_window)
                               delay(5)
-                              raw_f=a6+"p2pshieldroom_"+str(a_bw)+"_external_UDP_"+str(attn)+"dB.txt"
+                              a6_p2p=a6+"/scenario4/P2P/"
+                              raw_f_p2p=a6_p2p+"p2pshieldroom_"+str(a_bw)+"_external_UDP_"+str(attn)+"dB.txt"
                               if not os.path.exists(a6):os.makedirs(a6)
                               Wifip2p_SSH_UDP(raw_f_p2p,attn,a5_p2p,a8,a10,a_udp_p2p)
                               change_attn(attn)
