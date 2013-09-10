@@ -13,7 +13,7 @@ import Image, ImageTk
 import os
 import webbrowser
 import matplotlib.pyplot as plt
-#from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
 from pylab import *
 import commands
@@ -95,49 +95,58 @@ def bt_voice(a9):
 
 #####################################Reset Attenuation################################################################3333
 def reset_attn():
-        s_att= serial.Serial(port='/dev/ttyUSB0',baudrate=9600, bytesize=8, parity='N', stopbits=1,timeout=1)
+        s_att= serial.Serial(port='/dev/ttyACM0',baudrate=9600, bytesize=8, parity='N', stopbits=1,timeout=1)
         s_w1= 'sa1 '+ str(0)
         s_w2= 'sa2 '+ str(0)
         s_w3= 'sa3 '+ str(0)
         s_w4= 'sa4 '+ str(0)
         
         s_att.write(s_w1)
+        s_att.write("\n")
         s_read=s_att.readline()
         print(s_read)        
         s_att.write(s_w2)
+        s_att.write("\n")
         s_read=s_att.readline()
         print(s_read)        
         s_att.write(s_w3)
+        s_att.write("\n")
         s_read=s_att.readline()
         print(s_read)        
         s_att.write(s_w4)
+        s_att.write("\n")
         s_read=s_att.readline()
         print(s_read)
         os._exit(0)
 
 ########################################################################################################################################################
 def change_attn(a2):
-        s_att= serial.Serial(port='/dev/ttyUSB0',baudrate=9600, bytesize=8, parity='N', stopbits=1,timeout=1)
+        s_att= serial.Serial(port='/dev/ttyACM0',baudrate=9600, bytesize=8, parity='N', stopbits=1,timeout=1)
         s_w1= 'sa1 '+ str(a2)
         s_w2= 'sa2 '+ str(a2)
         s_w3= 'sa3 '+ str(a2)
         s_w4= 'sa4 '+ str(a2)
-        
+
         s_att.write(s_w1)
+        s_att.write("\n")
         s_read=s_att.readline()
         print(s_read)        
         s_att.write(s_w2)
+        s_att.write("\n")
         s_read=s_att.readline()
         print(s_read)        
         s_att.write(s_w3)
+        s_att.write("\n")
         s_read=s_att.readline()
         print(s_read)        
         s_att.write(s_w4)
+        s_att.write("\n")
         s_read=s_att.readline()
         print(s_read)
         
-########################################################################################################
-        
+##############################################################################################################
+
+######################AP to TV ping#######################################################################
 def ping_status(a_s):
         cmd_TX= "ping -i 1 -w 4 "+ a_s
         #cmd_RX= "ping a8"
@@ -148,6 +157,22 @@ def ping_status(a_s):
         while (i<a1):
             print output[i]
             i=i+1
+####################### TV to P2P client 
+def ping_status_p2p(a9, a_s):
+        cmd_TX= "ping -i 1 -w 4 "+ a_s
+        print cmd_TX
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(hostname=a9, username='wireless',password='wireless',port=22)  
+        stdin, stdout, stderr = ssh.exec_command(cmd_TX) ###Iperf Receving traffic
+        output= stdout.readlines()
+        #output=commands.getstatusoutput(cmd_TX)
+        i=1
+        a1=len(output)
+        while (i<a1):
+            print output[i]
+            i=i+1
+
 
 
 ########################Print Statistics###########################################################33
@@ -161,7 +186,7 @@ def Wifi_SSH_TCP(raw_f,attn,a5,a7,a9,a_window):
         #print a9 # TV Wifi address
         print raw_f
         f_raw=open(raw_f,"w")
-        cmd_sr = "iperf -i 0.5" + " -c " + a9  + " -t " + a5  # The TV side iperf client 
+        cmd_sr = "iperf -i 0.5" + " -c " + a9  + " -t " + a5 + " -w" + a_window  # The TV side iperf client 
         cmd_si= "iperf -s -w "+ a_window                      # Iperf server
         print cmd_sr
         print cmd_si
@@ -243,41 +268,79 @@ def Wifi_SSH_UDP(raw_f,attn,a5,a7,a9,a_udp):
         ssh.close()
 
 ##################################################################################################
-def Wifip2p_SSH_TCP(raw_f,attn,a5_p2p,a8,a10,a_window_p2p):
-        #print a5  # Run time
+def Wifip2p_SSH_TCP(raw_f_wifi,raw_f_p2p,attn,a5,a5_p2p,a7,a8,a9,a11,a_window,a_window_p2p,a12_p2p,a_udp_p2p,a12, a_udp):
+        #print a5  # Run time infra
+         #a5_p2p #run time P2P
         #print a7  # TV wifi address
         #print a9  # Client Wifi address
         #print a8  # TV P2P address
+         #a9 TV Wifi address
         #print a10 # client P2P address
-        print raw_f
-        f_raw=open(raw_f,"w+")
-        cmd_sr = "iperf -i 0.5" + " -c " + a8  + " -t " + a5  # The TV side iperf client 
-        cmd_si= "iperf -s -w "+ a_window                      # Iperf server
-        print cmd_sr
-        print cmd_si
+         #print raw_f
+        f_raw_wifi=open(raw_f_wifi,"w+")
+        f_raw_p2p=open(raw_f_p2p,"w+")
+        if a12=="TCP":
+                cmd_sr_wifi = "iperf -i 0.5" + " -c " + a9  + " -t " + a5 + " -w " + a_window + " -p 5002 "
+                print cmd_sr_wifi
+                cmd_si_wifi= "iperf -s -w "+ a_window + " -p 5002 "
+                if a12_p2p == "TCP":
+                        cmd_sr_p2p = "iperf -i 0.5" + " -c " + a8  + " -t " + a5_p2p + " -w " + a_window_p2p + " -p 5004 "    # The TV side iperf client
+                        print cmd_sr_p2p
+                        cmd_si_p2p= "iperf -s -w "+ a_window_p2p + " -p 5004 "
+                else:
+                        cmd_sr_p2p = "iperf -i 0.5" + " -c " + a8  + " -t " + a5_p2p + " -u -p 5004 -b "  + a_udp_p2p     # The TV side iperf client
+                        print cmd_sr_p2p
+                        cmd_si_p2p= "iperf -s -u -b "+ a_udp_p2p + " -p 5004 "
 
+        else:
+                cmd_sr_wifi = "iperf -i 0.5 -u" + " -c " + a9  + " -t " + a5 + " -b " + a_udp + " -p 5002 "
+                print cmd_sr_wifi
+                cmd_si_wifi= "iperf -s  -u -b "+ a_udp + " -p 5002 "
+                if a12_p2p == "TCP":
+                        cmd_sr_p2p = "iperf -i 0.5" + " -c " + a8  + " -t " + a5_p2p + " -w " + a_window_p2p + " -p 5004 "    # The TV side iperf client
+                        print cmd_sr_p2p
+                        cmd_si_p2p= "iperf -s -w "+ a_window_p2p + " -p 5004 "
+                else:
+                        cmd_sr_p2p = "iperf -i 0.5" + " -c " + a8  + " -t " + a5_p2p + " -u -p 5004 -b "  + a_udp_p2p     # The TV side iperf client
+                        print cmd_sr_p2p
+                        cmd_si_p2p= "iperf -s -u -b "+ a_udp_p2p + " -p 5004 "
+        
+        #print cmd_sr
+        #print cmd_si
 ###########################################################################################################
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(hostname=a9, username='wireless',password='wireless',port=22)  
-        stdin, stdout, stderr = ssh.exec_command(cmd_sr)
-        output=stdout.read()
-        ####################################SSH on the P2P laptop####################################
+        ssh_wifi = paramiko.SSHClient()
         ssh_p2p = paramiko.SSHClient()
+        ssh_wifi.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh_p2p.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh_p2p.connect(hostname=a10, username='wireless',password='wireless',port=22)  
-        stdin, stdout, stderr = ssh_p2p.exec_command(cmd_si)
+
+        ssh_wifi.connect(hostname=a9, username='wireless',password='wireless',port=22)
+        ssh_p2p.connect(hostname=a11, username='wireless',password='wireless',port=22) 
+        stdin, stdout, stderr = ssh_wifi.exec_command(cmd_si_wifi)
+        stdin, stdout, stderr = ssh_wifi.exec_command(cmd_si_p2p)
+        output_wifi=commands.getstatusoutput(cmd_sr_wifi)
+        stdin_p2p, stdout_p2p, stderr_p2p = ssh_p2p.exec_command(cmd_sr_p2p)
+        ####################################SSH on the P2P laptop####################################
         #########################################SSH on P2P laptop###################################
-        output= stdout.readlines()
-        a1= len(output)
+        output_p2p= stdout_p2p.readlines()
+        a1= len(output_wifi)
         i=1
         while (i<a1):
-            print output[i]
-            f_raw.write(output[i])
+            print output_wifi[i]
+            f_raw_wifi.write(output_wifi[i])
             i=i+1
             
-        f_raw.close()
-        ssh.close()
+        f_raw_wifi.close()
+        ssh_wifi.close()
+        
+        a1= len(output_p2p)
+        i=1
+        while (i<a1):
+            print output_p2p[i]
+            f_raw_p2p.write(output_p2p[i])
+            i=i+1
+            
+        f_raw_p2p.close()
+        ssh_p2p.close()
 #######################################################################################################################################################
 def Wifip2p_SSH_UDP(raw_f_p2p,attn,a5_p2p,a8,a10,a_udp_p2p):
         print raw_f_p2p
@@ -574,11 +637,11 @@ class Wifi_only(Tkinter.Tk):
         a8=self.entry8.get() ##TV P2P address
         a9=self.entry9.get() ##TV wifi address
         a10=self.entry10.get() ##Client P2P address
-        a11=self.entry10.get()## p2P client Ethernet
+        a11=self.entry11.get()## p2P client Ethernet
         a_udp=self.entry_udp.get()#### UDP bandwidth Infra
         a_udp_p2p=self.entry_udp_p2p.get()#### UDP bandwidth Infra
         a_window=self.entry_window.get() ###TCP/IP window size
-        a_window_p2p=self.entry_window.get() ### UDP Size
+        a_window_p2p=self.entry_window.get() ### P2p TCp iP windowsize
         a12=self.var_iperf_infra.get()  ### Iperf choice , Infra
         a12_p2p=self.var_iperf_p2p.get() ###Iperf choice , P2P
         print a12
@@ -612,7 +675,7 @@ class Wifi_only(Tkinter.Tk):
               change_attn(attn)
               attn=attn+attn_st
               print print_graph(raw_f,self)
-              bt_voice(a9)
+              #bt_voice(a9)
         elif a13=="WI-FI+BT":
            while(attn <= int(a3)):
               a6=a6+ "/secenariobt/"
@@ -623,6 +686,7 @@ class Wifi_only(Tkinter.Tk):
               Wifi_SSH_TCP_BT(raw_f,attn,a5,a7,a9,a_window)
               change_attn(attn)
               attn=attn+attn_st
+              bt_voice(a9)
               print print_graph(raw_f,self)
               
         elif a13=="Wifi only" and a12=="UDP":
@@ -635,7 +699,7 @@ class Wifi_only(Tkinter.Tk):
               Wifi_SSH_UDP(raw_f,attn,a5,a7,a9,a_udp)
               change_attn(attn)
               attn=attn+attn_st
-              print print_graph(raw_f,self)
+              #print print_graph(raw_f,self)
         elif a13=="WI-FI with P2P GO" and a12=="TCP":
            while(attn <= int(a3)):
               a6=a6+ "/secenario2/"
@@ -687,66 +751,72 @@ class Wifi_only(Tkinter.Tk):
         elif a13=="WI-FI with P2P GO with traffic" and a12=="TCP":
            if  a12_p2p=="TCP":
                 while(attn <= int(a3)):
-                      a6_wifi=a6+"/scenario4/infra/"
                       a_s=a9
-                      ping_status(a_s)
-                      if not os.path.exists(a6):os.makedirs(a6)
-                      raw_f=a6_wifi+"shieldroom_"+str(a_bw)+"_external_TCP_"+str(attn)+"dB.txt"
-                      Wifi_SSH_TCP(raw_f,attn,a5,a7,a9,a_window)
-                      delay(5)
+                      ping_status(a_s) #checking connection to the AP
+                      a_s=a10
+                      ping_status_p2p(a9, a_s)
+                      a6_wifi=a6+"/scenario4/Wifi/"
+                      if not os.path.exists(a6_wifi):os.makedirs(a6_wifi)
+                      raw_f_wifi=a6_wifi+"shieldroom_"+str(a_bw)+"_external_TCP_"+str(attn)+"dB.txt"
                       a6_p2p=a6+"/scenario4/P2P/"
-                      if not os.path.exists(a6):os.makedirs(a6)
+                      if not os.path.exists(a6_p2p):os.makedirs(a6_p2p)
                       raw_f_p2p=a6_p2p+"p2pshieldroom_"+str(a_bw)+"_external_TCP_"+str(attn)+"dB.txt"
-                      Wifip2p_SSH_TCP(raw_f_p2p,attn,a5_p2p,a8,a10,a_udp_p2p)
+                      Wifip2p_SSH_TCP(raw_f_wifi,raw_f_p2p,attn,a5,a5_p2p,a7,a8,a9,a11,a_window,a_window_p2p,a12_p2p,a_udp_p2p,a12,a_udp)
                       change_attn(attn)
                       attn=attn+attn_st
-                      print print_graph(raw_f,self)
-           elif a12_p2p=="UDP":
+                      #print print_graph(raw_f_wifi,self)
+                      #print print_graph(raw_f_p2p,self)
+        elif a12_p2p=="UDP":
                 while(attn <= int(a3)):
                       a_s=a9
                       ping_status(a_s)
+                      a_s=a10
+                      ping_status_p2p(a9, a_s)
                       a6_wifi=a6+"/scenario4/Wifi/"
                       if not os.path.exists(a6):os.makedirs(a6)
-                      
-                      raw_f=a6_wifi+"shieldroom_"+str(a_bw)+"_external_UDP_"+str(attn)+"dB.txt"
-                      Wifi_SSH_TCP(raw_f,attn,a5,a7,a9,a_window)
-                      delay(5)
+                      raw_f_wifi=a6_wifi+"shieldroom_"+str(a_bw)+"_external_UDP_"+str(attn)+"dB.txt"
                       a6_p2p=a6+"/scenario4/P2P/"
-                      raw_f_p2p=a6_p2p+"p2pshieldroom_"+str(a_bw)+"_external_UDP_"+str(attn)+"dB.txt"
                       if not os.path.exists(a6):os.makedirs(a6)
-                      Wifip2p_SSH_TCP(raw_f_p2p,attn,a5_p2p,a8,a10,a_udp_p2p)
+                      raw_f_p2p=a6_p2p+"p2pshieldroom_"+str(a_bw)+"_external_UDP_"+str(attn)+"dB.txt"
+                      Wifip2p_SSH_TCP(raw_f_wifi,raw_f_p2p,attn,a5,a5_p2p,a7,a8,a9,a11,a_window,a_window_p2p,a12_p2p,a_udp_p2p,a12,a_udp)
                       change_attn(attn)
                       attn=attn+attn_st
-                      print print_graph(raw_f_p2p,self)
-           elif a13=="WI-FI with P2P GO with traffic" and a12=="UDP":
-                if  a12_p2p=="TCP":
-                        while(attn <= int(a3)):
-                              a6_wifi=a6+"/scenario4/Wifi/"
-                              raw_f=a6_wifi+"shieldroom_"+str(a_bw)+"_external_TCP_"+str(attn)+"dB.txt"
-                              if not os.path.exists(a6):os.makedirs(a6)
-                              Wifi_SSH_TCP(raw_f,attn,a5,a7,a9,a_window)
-                              delay(5)
-                              a6_p2p=a6+"/scenario4/P2P/"
-                              raw_f_p2p=a6_p2p+"p2pshieldroom_"+str(a_bw)+"_external_TCP_"+str(attn)+"dB.txt"
-                              if not os.path.exists(a6):os.makedirs(a6)
-                              Wifip2p_SSH_TCP(raw_f_p2p,attn,a5_p2p,a7,a9,a_window_p2p)
-                              change_attn(attn)
-                              attn=attn+attn_st
-                              print print_graph(raw_f_p2p,self)
-                elif a12_p2p=="UDP":
-                        while(attn <= int(a3)):
-                              a6_wifi=a6+"/scenario4/Wifi/"
-                              raw_f=a6_wifi+"shieldroom_"+str(a_bw)+"_external_UDP_"+str(attn)+"dB.txt"
-                              if not os.path.exists(a6):os.makedirs(a6)
-                              Wifi_SSH_TCP(raw_f,attn,a5,a7,a9,a_window)
-                              delay(5)
-                              a6_p2p=a6+"/scenario4/P2P/"
-                              raw_f_p2p=a6_p2p+"p2pshieldroom_"+str(a_bw)+"_external_UDP_"+str(attn)+"dB.txt"
-                              if not os.path.exists(a6):os.makedirs(a6)
-                              Wifip2p_SSH_UDP(raw_f_p2p,attn,a5_p2p,a8,a10,a_udp_p2p)
-                              change_attn(attn)
-                              attn=attn+attn_st
-                              print print_graph(raw_f_p2p,self)
+                      #print print_graph(raw_f_p2p,self)
+        elif a13=="WI-FI with P2P GO with traffic" and a12=="UDP":
+           if  a12_p2p=="TCP":   
+                while(attn <= int(a3)):
+                      a_s=a9
+                      ping_status(a_s) #checking connection to the AP
+                      a_s=a10
+                      ping_status_p2p(a9, a_s)
+                      a6_wifi=a6+"/scenario4/Wifi/"
+                      if not os.path.exists(a6_wifi):os.makedirs(a6_wifi)
+                      raw_f_wifi=a6_wifi+"shieldroom_"+str(a_bw)+"_external_UDP_"+str(attn)+"dB.txt"
+                      a6_p2p=a6+"/scenario4/P2P/"
+                      if not os.path.exists(a6_p2p):os.makedirs(a6_p2p)
+                      raw_f_p2p=a6_p2p+"p2pshieldroom_"+str(a_bw)+"_external_TCP_"+str(attn)+"dB.txt"
+                      Wifip2p_SSH_TCP(raw_f_wifi,raw_f_p2p,attn,a5,a5_p2p,a7,a8,a9,a11,a_window,a_window_p2p,a12_p2p,a_udp_p2p,a12)
+                      change_attn(attn)
+                      attn=attn+attn_st
+                      #print print_graph(raw_f_wifi,self)
+                      #print print_graph(raw_f_p2p,self)
+        elif a12_p2p=="UDP":
+                while(attn <= int(a3)):
+                      a_s=a9
+                      ping_status(a_s) #checking connection to the AP
+                      a_s=a10
+                      ping_status_p2p(a9, a_s)
+                      a6_wifi=a6+"/scenario4/Wifi/"
+                      if not os.path.exists(a6_wifi):os.makedirs(a6_wifi)
+                      raw_f_wifi=a6_wifi+"shieldroom_"+str(a_bw)+"_external_UDP_"+str(attn)+"dB.txt"
+                      a6_p2p=a6+"/scenario4/P2P/"
+                      if not os.path.exists(a6_p2p):os.makedirs(a6_p2p)
+                      raw_f_p2p=a6_p2p+"p2pshieldroom_"+str(a_bw)+"_external_UDP_"+str(attn)+"dB.txt"
+                      Wifip2p_SSH_TCP(raw_f_wifi,raw_f_p2p,attn,a5,a5_p2p,a7,a8,a9,a11,a_window,a_window_p2p,a12_p2p,a_udp_p2p,a12)
+                      change_attn(attn)
+                      attn=attn+attn_st
+                      #print print_graph(raw_f_wifi,self)
+                      #print print_graph(raw_f_p2p,self)
         else:
               callback_quit()
 

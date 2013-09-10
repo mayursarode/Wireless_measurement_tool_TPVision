@@ -96,12 +96,12 @@ class Post_processing(Tkinter.Tk):
 
  ######################################################### Entering the TAB name###################################################################################################
         self.label_att=Tkinter.Label(self, text="Tab name")
-        self.label_att.grid(column=1,row=9,columnspan=1,sticky='EW')
+        self.label_att.grid(column=1,row=10,columnspan=1,sticky='EW')
 
         self.entry_tab = Tkinter.Entry(self, width=40)
         self.entry_tab.delete(0,Tkinter.END)
         self.entry_tab.insert(0,"WIFI")  
-        self.entry_tab.grid(column=2, row=9, columnspan=10)
+        self.entry_tab.grid(column=2, row=10, columnspan=10)
         
         
 
@@ -320,7 +320,7 @@ def bubble_sort(b, traceLen):
 
 
 
-def cdf_calculation_p2p(a_pwdxl,a_pwd, a_st, a_stt,a_att,a_tab,a_bw):
+def cdf_calculation_p2p(a_pwdxl,a_pwd, a_st, a_stt,a_att,a_tab,a_bw,a_iprf):
         x=[]  ###local variable
         y=[]  ###Local variables
         ex_c=0
@@ -492,5 +492,5 @@ if __name__ == "__main__":
     path= '/home/wireless/Documents/Wireless_measurement_tool_TPVision/TPvision-logo.tiff'
     img =ImageTk.PhotoImage(Image.open(path))
     panel = Tkinter.Label(root, image = img)
-    panel.grid(column=2, row=10, columnspan=10)
+    panel.grid(column=2, row=12, columnspan=10)
     root.mainloop( )

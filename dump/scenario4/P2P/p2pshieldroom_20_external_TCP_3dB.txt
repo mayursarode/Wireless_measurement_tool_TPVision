@@ -1,0 +1,18 @@
+Client connecting to 2.2.2.1, TCP port 5004
+TCP window size:  256 KByte (WARNING: requested  512 KByte)
+------------------------------------------------------------
+[  3] local 2.2.2.2 port 51855 connected with 2.2.2.1 port 5004
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0- 0.5 sec  1.38 MBytes  23.1 Mbits/sec
+[  3]  0.5- 1.0 sec  1.12 MBytes  18.9 Mbits/sec
+[  3]  1.0- 1.5 sec  1.62 MBytes  27.3 Mbits/sec
+[  3]  1.5- 2.0 sec  1.38 MBytes  23.1 Mbits/sec
+[  3]  2.0- 2.5 sec  1.88 MBytes  31.5 Mbits/sec
+[  3]  2.5- 3.0 sec  2.00 MBytes  33.6 Mbits/sec
+[  3]  3.0- 3.5 sec  1.00 MBytes  16.8 Mbits/sec
+[  3]  3.5- 4.0 sec  1.75 MBytes  29.4 Mbits/sec
+[  3]  4.0- 4.5 sec  1.50 MBytes  25.2 Mbits/sec
+[  3]  4.5- 5.0 sec   896 KBytes  14.7 Mbits/sec
+[  3]  5.0- 5.5 sec  1.25 MBytes  21.0 Mbits/sec
+[  3]  5.5- 6.0 sec  1.00 MBytes  16.8 Mbits/sec
+[  3]  0.0- 6.1 sec  16.9 MBytes  23.3 Mbits/sec

@@ -13,7 +13,7 @@ import Image, ImageTk
 import os
 import webbrowser
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+#from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
 from pylab import *
 import commands
@@ -84,7 +84,7 @@ def print_graph(raw_f, self):
 
 
 def bt_voice(a9):
-        cmd_bt="aplay -N -D rocco /home/wireless/Documents/scripts/sin_wave_1KHz.wav -f S24_LE -r48000 "
+        cmd_bt="mpg321 -Z -w - /home/wireless/Documents/scripts/sine_3min_441_16bit_stereo.mp3|aplay -N -D a2dp "
         print "Send BT audio to the Laptop"
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
